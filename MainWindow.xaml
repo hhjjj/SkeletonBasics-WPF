@@ -1,0 +1,90 @@
+﻿<Window x:Class="Microsoft.Samples.Kinect.SkeletonBasics.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Skeleton Basics" Height="735" Width="1070" Loaded="WindowLoaded" Closing="WindowClosing">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="MediumGreyBrush" Color="#ff6e6e6e"/>
+        <SolidColorBrush x:Key="KinectPurpleBrush" Color="#ff52318f"/>
+        <SolidColorBrush x:Key="KinectBlueBrush" Color="#ff00BCF2"/>
+        <Style TargetType="{x:Type Image}">
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+        </Style>
+        <Style TargetType="{x:Type CheckBox}" x:Key="SquareCheckBox" >
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CheckBox}">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" Background="Transparent">
+                                <Grid x:Name="SquareCheckBoxChecked">
+                                    <Image x:Name="CheckedNormal" Source="Images\CheckedNormal.png" Stretch="None" HorizontalAlignment="Center"/>
+                                    <Image x:Name="CheckedHover" Source="Images\CheckedHover.png" Stretch="None" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                                </Grid>
+                                <Grid x:Name="SquareCheckBoxUnchecked" Visibility="Collapsed">
+                                    <Image x:Name="UncheckedNormal" Source="Images\UncheckedNormal.png" Stretch="None" HorizontalAlignment="Center"/>
+                                    <Image x:Name="UncheckedHover" Source="Images\UncheckedHover.png" Stretch="None" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                                </Grid>
+                                <TextBlock x:Name="SquareCheckBoxText" Text="{TemplateBinding Content}" TextAlignment="Left"  VerticalAlignment="Center" Foreground="{StaticResource KinectPurpleBrush}" FontSize="15"  Margin="9,0,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="false">
+                                <Setter Property="Visibility" Value="Collapsed" TargetName="SquareCheckBoxChecked"/>
+                                <Setter Property="Visibility" Value="Visible" TargetName="SquareCheckBoxUnchecked"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Visibility" Value="Collapsed" TargetName="CheckedNormal"/>
+                                <Setter Property="Visibility" Value="Collapsed" TargetName="UncheckedNormal"/>
+                                <Setter Property="Visibility" Value="Visible" TargetName="CheckedHover"/>
+                                <Setter Property="Visibility" Value="Visible" TargetName="UncheckedHover"/>
+                                <Setter Property="Foreground" Value="{StaticResource KinectBlueBrush}" TargetName="SquareCheckBoxText"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Name="layoutGrid" Margin="10,0,0,0" HorizontalAlignment="Left" Width="766">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <DockPanel Grid.Row="0" Margin="0,20">
+            <TextBlock DockPanel.Dock="Right" Margin="0 0 -1 0" VerticalAlignment="Center" Foreground="{StaticResource MediumGreyBrush}" FontFamily="Segoe UI" FontSize="18" HorizontalAlignment="Center" Text="Nike Free Limbo Skeleton"/>
+        </DockPanel>
+        <Viewbox Grid.Row="1" Stretch="Uniform" HorizontalAlignment="Center">
+            <Image Name="Image" Width="640" Height="480"/>
+        </Viewbox>
+        <CheckBox Grid.Row="2" Style="{StaticResource SquareCheckBox}" Content="Seated Mode" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0 10 10 10" Name="checkBoxSeatedMode" Checked="CheckBoxSeatedModeChanged" Unchecked="CheckBoxSeatedModeChanged"/>
+        <StatusBar Grid.Row="3" HorizontalAlignment="Stretch" Name="statusBar" VerticalAlignment="Bottom" Background="White" Foreground="{StaticResource MediumGreyBrush}">
+            <StatusBarItem Padding="0 0 0 10">
+                <TextBlock Name="statusBarText" Margin="-1 0 0 0">Click 'Seated' to change skeletal pipeline type!</TextBlock>
+            </StatusBarItem>
+        </StatusBar>
+        <TextBox x:Name="upperTwistAngleTextBox" HorizontalAlignment="Left" Height="23" Margin="870,104,-224,0" TextWrapping="Wrap" Text="Degree" VerticalAlignment="Top" Width="120" Grid.Row="1"/>
+        <TextBox x:Name="backBendingTextBox" HorizontalAlignment="Left" Height="23" Margin="870,183,-224,0" TextWrapping="Wrap" Text="Degree" VerticalAlignment="Top" Width="120" Grid.Row="1"/>
+        <Label Content="상반신 회전" HorizontalAlignment="Left" Margin="792,102,-104,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1"/>
+        <Label Content="앞뒤 각도" HorizontalAlignment="Left" Margin="792,181,-104,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1"/>
+        <Label Content="좌우 각도" HorizontalAlignment="Left" Margin="792,210,-104,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1"/>
+        <TextBox x:Name="rightBendingTextBox" HorizontalAlignment="Left" Height="23" Margin="870,212,-224,0" TextWrapping="Wrap" Text="Degree" VerticalAlignment="Top" Width="120" Grid.Row="1"/>
+        <TextBox x:Name="bodyTwistAngleTextBox" HorizontalAlignment="Left" Height="23" Margin="870,135,-224,0" TextWrapping="Wrap" Text="Degree" VerticalAlignment="Top" Width="120" Grid.Row="1"/>
+        <Label Content="보디 회전" HorizontalAlignment="Left" Margin="792,133,-104,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1"/>
+        <TextBox x:Name="LRMoveTextBox" HorizontalAlignment="Left" Height="23" Margin="870,1,-224,0" TextWrapping="Wrap" Text="Meter" VerticalAlignment="Top" Width="120" Grid.Row="1"/>
+        <Label Content="좌우 이동" HorizontalAlignment="Left" Margin="792,0,-104,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1"/>
+        <TextBox x:Name="FBMoveTextBox" HorizontalAlignment="Left" Height="23" Margin="870,31,-224,0" TextWrapping="Wrap" Text="Meter" VerticalAlignment="Top" Width="120" Grid.Row="1"/>
+        <Label Content="앞뒤 이동" HorizontalAlignment="Left" Margin="792,29,-104,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1"/>
+        <TextBox x:Name="UDMoveTextBox" HorizontalAlignment="Left" Height="23" Margin="870,61,-224,0" TextWrapping="Wrap" Text="Meter" VerticalAlignment="Top" Width="120" Grid.Row="1"/>
+        <Label Content="상하 이동" HorizontalAlignment="Left" Margin="792,59,-104,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1"/>
+        <CheckBox x:Name="OSCCheckBox" Content="OSC Send ON Status" HorizontalAlignment="Left" Margin="803,251,-224,0" Grid.Row="1" VerticalAlignment="Top" Width="187" IsChecked="True"/>
+        <Label Content="IP Addr" HorizontalAlignment="Left" Margin="792,42,-104,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="2" Grid.RowSpan="2"/>
+        <TextBlock x:Name="ipShowTextBlock" HorizontalAlignment="Left" Margin="880,3,-277,0" Grid.Row="3" TextWrapping="Wrap" Text="my ip address" VerticalAlignment="Top" Width="163"/>
+        <TextBox x:Name="ipInputTextBox" HorizontalAlignment="Left" Height="23" Margin="803,284,-157,0" Grid.Row="1" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+        <Button x:Name="ipUpdateButton" Content="Apply" HorizontalAlignment="Left" Margin="952,299,-261,0" Grid.Row="1" VerticalAlignment="Top" Width="75" Click="ipUpdateButton_Click"/>
+        <TextBox x:Name="portInputBox" HorizontalAlignment="Left" Height="23" Margin="803,312,-157,0" Grid.Row="1" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+        <TextBlock x:Name="frameRateText" HorizontalAlignment="Left" Margin="852,371,-198,0" Grid.Row="1" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="112"/>
+    </Grid>
+</Window>
