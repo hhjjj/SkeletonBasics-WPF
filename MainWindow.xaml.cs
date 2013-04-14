@@ -372,6 +372,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         void CalculateAndSendOSC(Skeleton skel)
         {
             Joint hipCenter = skel.Joints[JointType.HipCenter];
+            Joint kneeLeft = skel.Joints[JointType.KneeLeft];
+            Joint kneeRight = skel.Joints[JointType.KneeRight];
+
+          
 
             //if (hipCenter.TrackingState == JointTrackingState.NotTracked)
             //{ 
@@ -380,11 +384,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             float LRMove = hipCenter.Position.X *-1;
             LRMoveTextBox.Text = LRMove.ToString();
 
-            float FBMove = hipCenter.Position.Z - (float)3.0;
+            float FBMove = (hipCenter.Position.Z - (float)2.9) *(float) Math.Cos(23 *Math.PI / 180.0) *(float)(-1.0);
             FBMoveTextBox.Text = FBMove.ToString();
 
             float UDMove = hipCenter.Position.Y;
             UDMoveTextBox.Text = UDMove.ToString();
+
+            float kneeHeight = (float)(1.0)+(kneeLeft.Position.Y + kneeRight.Position.Y) / 2;
+            kneeHeight = kneeHeight - FBMove * (float)Math.Sin(23 * Math.PI / 180.0);
+            kneeHeightTextBox.Text = kneeHeight.ToString();
 
             double FBAngle = GetFBAngle(skel);
             backBendingTextBox.Text = FBAngle.ToString();
@@ -415,6 +423,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 msg.Append((float)LRAngle);
                 msg.Append((float)shoulderRotation);
                 msg.Append((float)bodyRotation);
+                msg.Append((float)kneeHeight);
                 msg.Send(sourceEndPoint);
 
 
@@ -729,5 +738,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 this.lastTime = cur;
             }
         }
+
+
+
+
     }
 }
