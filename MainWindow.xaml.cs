@@ -101,14 +101,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         // OSC Related
 
         public static readonly int Port = 5103;
-         OscBundle bundle = CreateTestBundle();
-         OscMessage OSCMsg = CreateTestMsg();
+         //OscBundle bundle = CreateTestBundle();
+         //OscMessage OSCMsg = CreateTestMsg();
          //ITransmitter transmitter;
 
          //private static readonly string AliveMethod = "/osctest/alive";
          private static readonly string kinectMsg = "/kinect";
 
-         IPEndPoint sourceEndPoint = new IPEndPoint(IPAddress.Loopback, Port);
+         private static IPEndPoint sourceEndPoint = new IPEndPoint(IPAddress.Loopback, Port);
          string oscIPAddress;
          string oscPort;
 
@@ -210,8 +210,52 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             if (null != this.sensor)
             {
+                // smoothing parameter
+                /*
+                // Some smoothing with little latency (defaults).
+                // Only filters out small jitters.
+                // Good for gesture recognition in games.
+                TransformSmoothParameters smoothingParam = new TransformSmoothParameters();
+                {
+                    smoothingParam.Smoothing = 0.5f;
+                    smoothingParam.Correction = 0.5f;
+                    smoothingParam.Prediction = 0.5f;
+                    smoothingParam.JitterRadius = 0.05f;
+                    smoothingParam.MaxDeviationRadius = 0.04f;
+                };
+                
+
+                // Smoothed with some latency.
+                // Filters out medium jitters.
+                // Good for a menu system that needs to be smooth but
+                // doesn't need the reduced latency as much as gesture recognition does.
+                TransformSmoothParameters smoothingParam = new TransformSmoothParameters();
+                {
+                    smoothingParam.Smoothing = 0.5f;
+                    smoothingParam.Correction = 0.1f;
+                    smoothingParam.Prediction = 0.5f;
+                    smoothingParam.JitterRadius = 0.1f;
+                    smoothingParam.MaxDeviationRadius = 0.1f;
+                };
+                */
+
+                // Very smooth, but with a lot of latency.
+                // Filters out large jitters.
+                // Good for situations where smooth data is absolutely required
+                // and latency is not an issue.
+                
+                TransformSmoothParameters smoothingParam = new TransformSmoothParameters();
+                {
+                    smoothingParam.Smoothing = 0.7f;
+                    smoothingParam.Correction = 0.3f;
+                    smoothingParam.Prediction = 1.0f;
+                    smoothingParam.JitterRadius = 1.0f;
+                    smoothingParam.MaxDeviationRadius = 1.0f;
+                };
+                
                 // Turn on the skeleton stream to receive skeleton frames
-                this.sensor.SkeletonStream.Enable();
+                //this.sensor.SkeletonStream.Enable();
+                this.sensor.SkeletonStream.Enable(smoothingParam);
 
                 // Add an event handler to be called whenever there is new color frame data
                 this.sensor.SkeletonFrameReady += this.SensorSkeletonFrameReady;
@@ -245,56 +289,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             
         }
 
-        private static OscBundle CreateTestBundle()
-        {
-            IPEndPoint sourceEndPoint = new IPEndPoint(IPAddress.Loopback, Port);
-            OscBundle bundle = new OscBundle(sourceEndPoint);
+        
 
-            //OscBundle nestedBundle = new OscBundle(sourceEndPoint);
-            OscMessage nestedMessage = new OscMessage(sourceEndPoint, kinectMsg);
-            //nestedMessage.AppendNil();
-            //nestedMessage.Append("Some String");
-            //nestedMessage.Append(10);
-            //nestedMessage.Append(50);
-            //nestedMessage.Append(100000L);
-            //nestedMessage.Append(1234.567f);
-            //nestedMessage.Append(10.0012345);
-            //nestedMessage.Append(new byte[] { 1, 2, 3, 4 });
-            //nestedMessage.Append(new OscTimeTag());
-            //nestedMessage.Append('c');
-            //nestedMessage.Append(true);
-            //nestedMessage.Append(false);
-            //nestedMessage.Append(float.PositiveInfinity);
-            //nestedBundle.Append(nestedMessage);
-            //bundle.Append(nestedBundle);
-
-            //OscMessage message = new OscMessage(sourceEndPoint, AliveMethod);
-            //message.Append(9876.543f);
-            //bundle.Append(message);
-
-            nestedMessage.Append(10);
-            nestedMessage.Append(82);
-            bundle.Append(nestedMessage);
-            //bundle.Append(nestedBundle);
-
-
-            return bundle;
-        }
-
-        private static OscMessage CreateTestMsg()
-        {
-            IPEndPoint sourceEndPoint = new IPEndPoint(IPAddress.Loopback, Port);
-
-            OscMessage msg = new OscMessage(sourceEndPoint, kinectMsg);
-
-            msg.Append(10);
-            msg.Append(82);
-            
-
-
-
-            return msg;
-        }
+        
 
         /// <summary>
         /// Execute shutdown tasks
@@ -326,6 +323,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 {
                     skeletons = new Skeleton[skeletonFrame.SkeletonArrayLength];
                     skeletonFrame.CopySkeletonDataTo(skeletons);
+                    
                 }
             }
 
@@ -384,15 +382,19 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             float LRMove = hipCenter.Position.X *-1;
             LRMoveTextBox.Text = LRMove.ToString();
 
-            float FBMove = (hipCenter.Position.Z - (float)2.9) *(float) Math.Cos(23 *Math.PI / 180.0) *(float)(-1.0);
+            //float FBMove = (hipCenter.Position.Z - (float)2.9) *(float) Math.Cos(23 *Math.PI / 180.0) *(float)(-1.0);
+            //FBMoveTextBox.Text = FBMove.ToString();
+            float FBMove = (float)(3.0)-(float)Math.Sqrt(Math.Pow(skel.Position.X,2)+Math.Pow(skel.Position.Y,2)+Math.Pow(skel.Position.Z,2));
             FBMoveTextBox.Text = FBMove.ToString();
 
             float UDMove = hipCenter.Position.Y;
             UDMoveTextBox.Text = UDMove.ToString();
 
-            float kneeHeight = (float)(1.0)+(kneeLeft.Position.Y + kneeRight.Position.Y) / 2;
+            //float kneeHeight = (float)(1.0)+(kneeLeft.Position.Y + kneeRight.Position.Y) / 2;
+            float kneeHeight = (kneeLeft.Position.Y + kneeRight.Position.Y) / 2;
             kneeHeight = kneeHeight - FBMove * (float)Math.Sin(23 * Math.PI / 180.0);
             kneeHeightTextBox.Text = kneeHeight.ToString();
+            
 
             double FBAngle = GetFBAngle(skel);
             backBendingTextBox.Text = FBAngle.ToString();
