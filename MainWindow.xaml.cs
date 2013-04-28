@@ -13,7 +13,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
     using System;
     using System.Windows.Media.Media3D;
-
+    using System.Windows.Media.Imaging;
 
     using Microsoft.Kinect;
     using Bespoke.Common;
@@ -102,22 +102,24 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         // OSC Related
 
-        public static readonly int Port = 5103;
+        public static readonly int kinectServerPort = 5103;
+        public static readonly int cmdServerPort = 8000;
          //OscBundle bundle = CreateTestBundle();
          //OscMessage OSCMsg = CreateTestMsg();
          //ITransmitter transmitter;
 
-         //private static readonly string AliveMethod = "/osctest/alive";
-         private static readonly string kinectMsg = "/kinect";
+         
+         
 
-         private static IPEndPoint sourceEndPoint = new IPEndPoint(IPAddress.Loopback, Port);
-         string oscIPAddress;
-         string oscPort;
+         private static IPEndPoint kinectServerIP = new IPEndPoint(IPAddress.Loopback, kinectServerPort);
+         private static IPEndPoint cmdServerIP = new IPEndPoint(IPAddress.Loopback, cmdServerPort);
+
 
         
          
-         //IPEndPoint sourceEndPoint = new IPEndPoint(IPAddress.Parse("192.168.0.109"), Port);   
-         private OscMessage msg;
+         //IPEndPoint kinectServerIP = new IPEndPoint(IPAddress.Parse("192.168.0.109"), Port);   
+         private OscMessage kinectMsg;
+         private OscMessage cmdMsg;
 
          private DateTime lastTime = DateTime.MinValue;
          private int FrameRate;
@@ -128,7 +130,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
          private double endPosition;
          private double userPosition;
 
+         private int kinectID;
 
+         private string kinectMsgAddr = "/kinect";
+         private string cmdMsgAddr = "/kinect/";
         
 
 
@@ -138,13 +143,21 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public MainWindow()
         {
             InitializeComponent();
-            ipInputTextBox.Text = sourceEndPoint.Address.ToString();
-            portInputBox.Text = sourceEndPoint.Port.ToString();
+            ipInputTextBox.Text = kinectServerIP.Address.ToString();
+            portInputBox.Text = kinectServerIP.Port.ToString();
+            cmdIpInput.Text = cmdServerIP.Address.ToString();
+            cmdPortInput.Text = cmdServerIP.Port.ToString();
+
             kinectHeight = 2.15;
             startPosition = -0.2;
             endPosition = 1.2;
 
             userPosition = -100;
+
+            kinectID = 1;
+            kinectIDText.Text = "Front";
+            kinectIDInput.Text = "1";
+            cmdMsgAddr = "/kinect/" + kinectID.ToString();
         }
 
         /// <summary>
@@ -272,6 +285,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 // Add an event handler to be called whenever there is new color frame data
                 this.sensor.SkeletonFrameReady += this.SensorSkeletonFrameReady;
+
+               
+               
 
                 // Start the sensor!
                 try
@@ -431,6 +447,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             UpdateFrameRate();
             frameRateText.Text = FrameRate.ToString();
         }
+       
 
         void CalculateAndSendOSC(Skeleton skel)
         {
@@ -500,22 +517,25 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     if (bodyRotation == Double.NaN) { bodyRotation = 0; }
 
 
-                    msg = new OscMessage(sourceEndPoint, kinectMsg);
-                    msg.Append((float)LRMove);
-                    msg.Append((float)FBMove);
-                    msg.Append((float)transHipCenter.Y);
-                    msg.Append((float)FBAngle);
-                    msg.Append((float)LRAngle);
-                    msg.Append((float)shoulderRotation);
-                    msg.Append((float)bodyRotation);
-                    msg.Append((float)transkneeRight.Y);
-                    msg.Send(sourceEndPoint);
+                    kinectMsg = new OscMessage(kinectServerIP, kinectMsgAddr);
+                    kinectMsg.Append((float)LRMove);
+                    kinectMsg.Append((float)FBMove);
+                    kinectMsg.Append((float)transHipCenter.Y);
+                    kinectMsg.Append((float)FBAngle);
+                    kinectMsg.Append((float)LRAngle);
+                    kinectMsg.Append((float)shoulderRotation);
+                    kinectMsg.Append((float)bodyRotation);
+                    kinectMsg.Append((float)transkneeRight.Y);
+                    kinectMsg.Send(kinectServerIP);
                 }
 
                 if (userPosition >= endPosition)
                 { 
                     // turn off infrared emitter
                     // let main controller know
+                    cmdMsg = new OscMessage(cmdServerIP, cmdMsgAddr);
+                    cmdMsg.Append("OUT");
+                    cmdMsg.Send(cmdServerIP);
                 }
             }
         }
@@ -788,16 +808,27 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         private void ipUpdateButton_Click(object sender, RoutedEventArgs e)
         {
-            oscIPAddress = ipInputTextBox.Text;
-            oscPort = portInputBox.Text;
-            if (sourceEndPoint != null)
+            
+            if (kinectServerIP != null)
             {
-                sourceEndPoint.Address = IPAddress.Parse(oscIPAddress);
-                sourceEndPoint.Port = Convert.ToInt32(oscPort);
-                ipInputTextBox.Text = sourceEndPoint.Address.ToString();
-                portInputBox.Text = sourceEndPoint.Port.ToString();
+                kinectServerIP.Address = IPAddress.Parse(ipInputTextBox.Text);
+                kinectServerIP.Port = Convert.ToInt32(portInputBox.Text);
+                ipInputTextBox.Text = kinectServerIP.Address.ToString();
+                portInputBox.Text = kinectServerIP.Port.ToString();
             }
         }
+
+        private void cmdIpUpdateButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (cmdServerIP != null)
+            {
+                cmdServerIP.Address = IPAddress.Parse(cmdIpInput.Text);
+                cmdServerIP.Port = Convert.ToInt32(cmdPortInput.Text);
+                cmdIpInput.Text = cmdServerIP.Address.ToString();
+                cmdPortInput.Text = cmdServerIP.Port.ToString();
+            }
+        }
+
 
         protected int TotalFrames { get; set; }
 
@@ -861,6 +892,22 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         {
             endPosition = Convert.ToDouble(endPositionInput.Text);
         }
+
+        private void kinectIDButton_Click(object sender, RoutedEventArgs e)
+        {
+            kinectID = Convert.ToInt32(kinectIDInput.Text);
+            cmdMsgAddr = "/kinect/" + kinectID.ToString();
+            if (kinectID == 1)
+            {
+                kinectIDText.Text = "Front";
+            }
+            if (kinectID == 2)
+            {
+                kinectIDText.Text = "Back";
+            }
+        }
+
+       
         
 
 
