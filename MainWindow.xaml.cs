@@ -26,6 +26,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
     using Transmitter;
     using System.Collections.Generic;
+    using System.Windows.Threading;
+    using ExceptionEventArgs = Bespoke.Common.ExceptionEventArgs;
 
 
     /// <summary>
@@ -104,37 +106,40 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         public static readonly int kinectServerPort = 5103;
         public static readonly int cmdServerPort = 8000;
-         //OscBundle bundle = CreateTestBundle();
-         //OscMessage OSCMsg = CreateTestMsg();
-         //ITransmitter transmitter;
+        //OscBundle bundle = CreateTestBundle();
+        //OscMessage OSCMsg = CreateTestMsg();
+        //ITransmitter transmitter;
 
          
          
 
-         private static IPEndPoint kinectServerIP = new IPEndPoint(IPAddress.Loopback, kinectServerPort);
-         private static IPEndPoint cmdServerIP = new IPEndPoint(IPAddress.Loopback, cmdServerPort);
+        private static IPEndPoint kinectServerIP = new IPEndPoint(IPAddress.Loopback, kinectServerPort);
+        private static IPEndPoint cmdServerIP = new IPEndPoint(IPAddress.Loopback, cmdServerPort);
 
 
-        
+        OscServer oscCmdReceiver;
          
-         //IPEndPoint kinectServerIP = new IPEndPoint(IPAddress.Parse("192.168.0.109"), Port);   
-         private OscMessage kinectMsg;
-         private OscMessage cmdMsg;
+        //IPEndPoint kinectServerIP = new IPEndPoint(IPAddress.Parse("192.168.0.109"), Port);   
+        private OscMessage kinectMsg;
+        private OscMessage cmdMsg;
 
-         private DateTime lastTime = DateTime.MinValue;
-         private int FrameRate;
-         private int kinectAngle;
+        private DateTime lastTime = DateTime.MinValue;
+        private int FrameRate;
+        private int kinectAngle;
 
-         private double kinectHeight;
-         private double startPosition;
-         private double endPosition;
-         private double userPosition;
+        private double kinectHeight;
+        private double startPosition;
+        private double endPosition;
+        private double userPosition;
 
-         private int kinectID;
+        private int kinectID;
 
-         private string kinectMsgAddr = "/kinect";
-         private string cmdMsgAddr = "/kinect/";
-        
+        private string kinectMsgAddr = "/kinect";
+        private string cmdMsgAddr = "/kinect/";
+        //private static readonly string AliveMethod = "/osctest/alive";
+        //private static readonly string TestMethod = "/osctest/test";
+
+      
 
 
         /// <summary>
@@ -321,6 +326,18 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             kinectHeightInput.Text = kinectHeight.ToString();
             startPositionInput.Text = startPosition.ToString();
             endPositionInput.Text = endPosition.ToString();
+
+
+            //oscCmdReceiver = new OscServer(TransportType.Udp, IPAddress.Loopback, cmdServerPort);
+            oscCmdReceiver = new OscServer(IPAddress.Parse("224.25.26.27"), cmdServerPort);
+            oscCmdReceiver.FilterRegisteredMethods = false;
+            //oscCmdServer.RegisterMethod(oscCmd);
+            oscCmdReceiver.RegisterMethod(cmdMsgAddr);
+            oscCmdReceiver.BundleReceived += new EventHandler<OscBundleReceivedEventArgs>(oscCmdReceiver_BundleReceived);
+            oscCmdReceiver.MessageReceived += new EventHandler<OscMessageReceivedEventArgs>(oscCmdReceiver_MessageReceived);
+            oscCmdReceiver.ReceiveErrored += new EventHandler<ExceptionEventArgs>(oscCmdReceiver_ReceiveErrored);
+            oscCmdReceiver.ConsumeParsingExceptions = false;
+            oscCmdReceiver.Start();
             
             
         }
@@ -907,6 +924,56 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
         }
 
+        private void oscCmdReceiver_BundleReceived(object sender, OscBundleReceivedEventArgs e)
+        {
+            sBundlesReceivedCount++;
+
+            OscBundle bundle = e.Bundle;
+
+            this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(delegate
+            {
+                //statusIndicator.Fill = new SolidColorBrush(Colors.Green);
+            }));
+            Console.WriteLine(string.Format("\nBundle Received [{0}:{1}]: Nested Bundles: {2} Nested Messages: {3}", bundle.SourceEndPoint.Address, bundle.TimeStamp, bundle.Bundles.Count, bundle.Messages.Count));
+            Console.WriteLine("Total Bundles Received: {0}", sBundlesReceivedCount);
+
+        }
+
+        private static void oscCmdReceiver_MessageReceived(object sender, OscMessageReceivedEventArgs e)
+        {
+            sMessagesReceivedCount++;
+
+            OscMessage message = e.Message;
+
+            Console.WriteLine(string.Format("\nMessage Received [{0}]: {1}", message.SourceEndPoint.Address, message.Address));
+            Console.WriteLine(string.Format("Message contains {0} objects.", message.Data.Count));
+
+            for (int i = 0; i < message.Data.Count; i++)
+            {
+                string dataString;
+
+                if (message.Data[i] == null)
+                {
+                    dataString = "Nil";
+                }
+                else
+                {
+                    dataString = (message.Data[i] is byte[] ? BitConverter.ToString((byte[])message.Data[i]) : message.Data[i].ToString());
+                }
+                Console.WriteLine(string.Format("[{0}]: {1}", i, dataString));
+            }
+
+            Console.WriteLine("Total Messages Received: {0}", sMessagesReceivedCount);
+        }
+
+        private static void oscCmdReceiver_ReceiveErrored(object sender, ExceptionEventArgs e)
+        {
+            Console.WriteLine("Error during reception of packet: {0}", e.Exception.Message);
+        }
+
+
+        private static int sBundlesReceivedCount;
+        private static int sMessagesReceivedCount;
        
         
 
