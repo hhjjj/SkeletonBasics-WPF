@@ -25,6 +25,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     //using System.Drawing;
 
     using Transmitter;
+    using System.Collections.Generic;
 
 
     /// <summary>
@@ -97,6 +98,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// </summary>
         private DrawingImage imageSource;
 
+        Matrix3D transformMatrix;
 
         // OSC Related
 
@@ -119,6 +121,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
          private DateTime lastTime = DateTime.MinValue;
          private int FrameRate;
+         private int kinectAngle;
 
 
         
@@ -264,6 +267,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 try
                 {
                     this.sensor.Start();
+                    kinectAngle = this.sensor.ElevationAngle;
+                    angleText.Text = kinectAngle.ToString();
+                    //this.sensor.ElevationAngle = -23;
                     ResetFrameRateCounters();
                 }
                 catch (IOException)
@@ -316,15 +322,46 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private void SensorSkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
         {
             Skeleton[] skeletons = new Skeleton[0];
+            
 
             using (SkeletonFrame skeletonFrame = e.OpenSkeletonFrame())
             {
                 if (skeletonFrame != null)
                 {
                     skeletons = new Skeleton[skeletonFrame.SkeletonArrayLength];
-                    skeletonFrame.CopySkeletonDataTo(skeletons);
-                    
+                    skeletonFrame.CopySkeletonDataTo(skeletons);   
                 }
+            }
+
+            if (this.sensor != null && this.sensor.SkeletonStream != null)
+            {
+                float closestDistance = 10000f; // Start with a far enough distance
+                int closestID = 0;
+
+                if (!this.sensor.SkeletonStream.AppChoosesSkeletons)
+                {
+                    this.sensor.SkeletonStream.AppChoosesSkeletons = true; // Ensure AppChoosesSkeletons is set
+                }
+
+                foreach (Skeleton skel in skeletons)
+                {
+
+                    // find the closest skeleton
+                    if (skel.TrackingState != SkeletonTrackingState.NotTracked)
+                    {
+                        if (skel.Position.Z < closestDistance)
+                        {
+                            closestDistance = skel.Position.Z;
+                            closestID = skel.TrackingId;
+                        }
+                    }
+
+                }
+                if (closestID > 0)
+                {
+                    this.sensor.SkeletonStream.ChooseSkeletons(closestID);
+                }
+                          
             }
 
             using (DrawingContext dc = this.drawingGroup.Open())
@@ -334,28 +371,42 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 if (skeletons.Length != 0)
                 {
+
+
                     foreach (Skeleton skel in skeletons)
                     {
                         RenderClippedEdges(skel, dc);
 
                         if (skel.TrackingState == SkeletonTrackingState.Tracked)
                         {
+
+                            
+                            if (isAllJointsTracked(skel))
+                            {
+                                allTrackedText.Text = "All Tracked";
+                            }
+                            else
+                            {
+                                allTrackedText.Text = "Not All";
+                            }
+
                             this.DrawBonesAndJoints(skel, dc);
+
+
 
                             // Calculate angles and send OSC msg
                             CalculateAndSendOSC(skel);
 
                         }
-                        else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
-                        {
-                            dc.DrawEllipse(
-                            this.centerPointBrush,
-                            null,
-                            this.SkeletonPointToScreen(skel.Position),
-                            BodyCenterThickness,
-                            BodyCenterThickness);
-                        }
-                        
+                        //else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
+                        //{
+                        //    dc.DrawEllipse(
+                        //    this.centerPointBrush,
+                        //    null,
+                        //    this.SkeletonPointToScreen(skel.Position),
+                        //    BodyCenterThickness,
+                        //    BodyCenterThickness);
+                        //}
                     }
                     
                 }
@@ -373,7 +424,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             Joint kneeLeft = skel.Joints[JointType.KneeLeft];
             Joint kneeRight = skel.Joints[JointType.KneeRight];
 
-          
+            transformMatrix = new Matrix3D(1, 0, 0, 0, 0, Math.Cos(DegreeToRadian(kinectAngle)), -1 * Math.Sin(DegreeToRadian(kinectAngle)), 0, 0, Math.Sin(DegreeToRadian(kinectAngle)), Math.Cos(DegreeToRadian(kinectAngle)), 0, 0, 0, 0, 1);
+
 
             //if (hipCenter.TrackingState == JointTrackingState.NotTracked)
             //{ 
@@ -387,14 +439,24 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             float FBMove = (float)(3.0)-(float)Math.Sqrt(Math.Pow(skel.Position.X,2)+Math.Pow(skel.Position.Y,2)+Math.Pow(skel.Position.Z,2));
             FBMoveTextBox.Text = FBMove.ToString();
 
-            float UDMove = hipCenter.Position.Y;
-            UDMoveTextBox.Text = UDMove.ToString();
+            Vector3D hipCenterVec = new Vector3D(hipCenter.Position.X, hipCenter.Position.Y, hipCenter.Position.Z);
+            Vector3D transHipCenter = Vector3D.Multiply(hipCenterVec, transformMatrix);
+            transHipCenter.Y = 2.15 + transHipCenter.Y;
+            UDMoveTextBox.Text = transHipCenter.Y.ToString();
+            //float UDMove = hipCenter.Position.Y;
+            //UDMoveTextBox.Text = UDMove.ToString();
+            
 
             //float kneeHeight = (float)(1.0)+(kneeLeft.Position.Y + kneeRight.Position.Y) / 2;
-            float kneeHeight = (kneeLeft.Position.Y + kneeRight.Position.Y) / 2;
-            kneeHeight = kneeHeight - FBMove * (float)Math.Sin(23 * Math.PI / 180.0);
-            kneeHeightTextBox.Text = kneeHeight.ToString();
-            
+            Vector3D kneeRightVec = new Vector3D(kneeRight.Position.X, kneeRight.Position.Y, kneeRight.Position.Z);
+            Vector3D transkneeRight = Vector3D.Multiply(kneeRightVec, transformMatrix);
+
+            //float kneeHeight = (kneeLeft.Position.Y + kneeRight.Position.Y) / 2;
+            //kneeHeight = kneeHeight - FBMove * (float)Math.Sin(23 * Math.PI / 180.0);
+            //kneeHeightTextBox.Text = kneeHeight.ToString();
+            transkneeRight.Y = 2.15 + transkneeRight.Y;
+            kneeHeightTextBox.Text = transkneeRight.Y.ToString();
+            //kneeHeightTextBox.Text = kneeRight.Position.Y.ToString();
 
             double FBAngle = GetFBAngle(skel);
             backBendingTextBox.Text = FBAngle.ToString();
@@ -420,12 +482,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 msg = new OscMessage(sourceEndPoint, kinectMsg);
                 msg.Append((float)LRMove);
                 msg.Append((float)FBMove);
-                msg.Append((float)UDMove);
+                msg.Append((float)transHipCenter.Y);
                 msg.Append((float)FBAngle);
                 msg.Append((float)LRAngle);
                 msg.Append((float)shoulderRotation);
                 msg.Append((float)bodyRotation);
-                msg.Append((float)kneeHeight);
+                msg.Append((float)transkneeRight.Y);
                 msg.Send(sourceEndPoint);
 
 
@@ -741,6 +803,24 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
         }
 
+        private double DegreeToRadian(double angle)
+        {
+            return Math.PI * angle / 180.0;
+        }
+
+        private bool isAllJointsTracked(Skeleton skel)
+        {
+            foreach (Joint joint in skel.Joints)
+            {
+                if (joint.TrackingState != JointTrackingState.Tracked)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        
 
 
 

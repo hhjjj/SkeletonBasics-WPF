@@ -90,5 +90,8 @@
         <TextBox x:Name="kneeHeightTextBox" HorizontalAlignment="Left" Height="23" Margin="870,241,-224,0" TextWrapping="Wrap" Text="m" VerticalAlignment="Top" Width="120" Grid.Row="1"/>
         <Label Content="Frame Rate" HorizontalAlignment="Left" Margin="792,443,-104,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1"/>
         <Label Content="Set OSC Server" HorizontalAlignment="Left" Margin="792,368,-125,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="99" Grid.Row="1"/>
+        <Label Content="Angle" HorizontalAlignment="Left" Margin="792,487,-104,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1"/>
+        <TextBlock x:Name="angleText" HorizontalAlignment="Left" Margin="890,492,-221,0" Grid.Row="1" TextWrapping="Wrap" Text="degree" VerticalAlignment="Top" Width="97"/>
+        <TextBlock x:Name="allTrackedText" HorizontalAlignment="Left" Margin="880,537,-226,0" Grid.Row="1" TextWrapping="Wrap" VerticalAlignment="Top" Width="112"><Run Language="ko-kr" Text="Tracking"/></TextBlock>
     </Grid>
 </Window>
