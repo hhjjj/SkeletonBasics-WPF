@@ -329,7 +329,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
 
             //oscCmdReceiver = new OscServer(TransportType.Udp, IPAddress.Loopback, cmdServerPort);
-            oscCmdReceiver = new OscServer(IPAddress.Parse("224.25.26.27"), cmdServerPort);
+            oscCmdReceiver = new OscServer(TransportType.Udp, IPAddress.Parse(LocalIPAddress()), cmdServerPort);
+            //oscCmdReceiver = new OscServer(IPAddress.Parse("224.25.26.27"), cmdServerPort);
             oscCmdReceiver.FilterRegisteredMethods = false;
             //oscCmdServer.RegisterMethod(oscCmd);
             oscCmdReceiver.RegisterMethod(cmdMsgAddr);
