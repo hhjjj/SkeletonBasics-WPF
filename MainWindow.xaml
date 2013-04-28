@@ -79,19 +79,29 @@
         <Label Content="앞뒤 이동" HorizontalAlignment="Left" Margin="792,29,-104,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1"/>
         <TextBox x:Name="UDMoveTextBox" HorizontalAlignment="Left" Height="23" Margin="870,61,-224,0" TextWrapping="Wrap" Text="Meter" VerticalAlignment="Top" Width="120" Grid.Row="1"/>
         <Label Content="상하 이동" HorizontalAlignment="Left" Margin="792,59,-104,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1"/>
-        <CheckBox x:Name="OSCCheckBox" Content="OSC Send ON Status" HorizontalAlignment="Left" Margin="804,307,-225,0" Grid.Row="1" VerticalAlignment="Top" Width="187" IsChecked="True"/>
+        <CheckBox x:Name="OSCCheckBox" Content="OSC Send ON Status" HorizontalAlignment="Left" Margin="804,277,-225,0" Grid.Row="1" VerticalAlignment="Top" Width="187" IsChecked="True"/>
         <Label Content="My IP Addr" HorizontalAlignment="Left" Margin="792,42,-104,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="2" Grid.RowSpan="2"/>
         <TextBlock x:Name="ipShowTextBlock" HorizontalAlignment="Left" Margin="880,3,-277,0" Grid.Row="3" TextWrapping="Wrap" Text="my ip address" VerticalAlignment="Top" Width="163"/>
-        <TextBox x:Name="ipInputTextBox" HorizontalAlignment="Left" Height="23" Margin="792,340,-146,0" Grid.Row="1" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <Button x:Name="ipUpdateButton" Content="Apply" HorizontalAlignment="Left" Margin="927,372,-236,0" Grid.Row="1" VerticalAlignment="Top" Width="75" Click="ipUpdateButton_Click"/>
-        <TextBox x:Name="portInputBox" HorizontalAlignment="Left" Height="23" Margin="927,340,-236,0" Grid.Row="1" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="75"/>
-        <TextBlock x:Name="frameRateText" HorizontalAlignment="Left" Margin="890,422,-236,0" Grid.Row="1" TextWrapping="Wrap" Text="fps" VerticalAlignment="Top" Width="112" FontSize="36" Foreground="#FFEB1EFF"/>
+        <TextBox x:Name="ipInputTextBox" HorizontalAlignment="Left" Height="23" Margin="792,310,-146,0" Grid.Row="1" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+        <Button x:Name="ipUpdateButton" Content="Apply" HorizontalAlignment="Left" Margin="927,342,-236,0" Grid.Row="1" VerticalAlignment="Top" Width="75" Click="ipUpdateButton_Click"/>
+        <TextBox x:Name="portInputBox" HorizontalAlignment="Left" Height="23" Margin="927,310,-236,0" Grid.Row="1" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="75"/>
+        <TextBlock x:Name="frameRateText" HorizontalAlignment="Left" Margin="890,392,-236,0" Grid.Row="1" TextWrapping="Wrap" Text="fps" VerticalAlignment="Top" Width="112" FontSize="36" Foreground="#FFEB1EFF"/>
         <Label Content="무릎 높이" HorizontalAlignment="Left" Margin="792,238,-104,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1"/>
         <TextBox x:Name="kneeHeightTextBox" HorizontalAlignment="Left" Height="23" Margin="870,241,-224,0" TextWrapping="Wrap" Text="m" VerticalAlignment="Top" Width="120" Grid.Row="1"/>
-        <Label Content="Frame Rate" HorizontalAlignment="Left" Margin="792,443,-104,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1"/>
-        <Label Content="Set OSC Server" HorizontalAlignment="Left" Margin="792,368,-125,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="99" Grid.Row="1"/>
-        <Label Content="Angle" HorizontalAlignment="Left" Margin="792,487,-104,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1"/>
-        <TextBlock x:Name="angleText" HorizontalAlignment="Left" Margin="890,492,-221,0" Grid.Row="1" TextWrapping="Wrap" Text="degree" VerticalAlignment="Top" Width="97"/>
-        <TextBlock x:Name="allTrackedText" HorizontalAlignment="Left" Margin="880,537,-226,0" Grid.Row="1" TextWrapping="Wrap" VerticalAlignment="Top" Width="112"><Run Language="ko-kr" Text="Tracking"/></TextBlock>
+        <Label Content="Frame Rate" HorizontalAlignment="Left" Margin="792,413,-104,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1"/>
+        <Label Content="Set OSC Server" HorizontalAlignment="Left" Margin="792,338,-125,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="99" Grid.Row="1"/>
+        <Label Content="Kinect Angle" HorizontalAlignment="Left" Margin="792,457,-119,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="93" Grid.Row="1"/>
+        <TextBlock x:Name="angleText" HorizontalAlignment="Left" Margin="890,462,-221,0" Grid.Row="1" TextWrapping="Wrap" Text="degree" VerticalAlignment="Top" Width="97"/>
+        <TextBlock x:Name="allTrackedText" HorizontalAlignment="Left" Margin="890,493,-236,0" Grid.Row="1" TextWrapping="Wrap" VerticalAlignment="Top" Width="112"><Run Language="ko-kr" Text="Tracking"/></TextBlock>
+        <Label Content="Joint Tracking" HorizontalAlignment="Left" Margin="792,488,-119,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="93" Grid.Row="1"/>
+        <Label Content="kinect Height" HorizontalAlignment="Left" Margin="792,519,-119,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="93" Grid.Row="1"/>
+        <Label Content="Start Position" HorizontalAlignment="Left" Margin="792,550,-119,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="93" Grid.Row="1" Grid.RowSpan="2"/>
+        <Label Content="End Position" HorizontalAlignment="Left" Margin="792,10,-119,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="93" Grid.Row="2"/>
+        <TextBox x:Name="kinectHeightInput" HorizontalAlignment="Left" Height="23" Margin="890,522,-188,0" Grid.Row="1" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="64"/>
+        <TextBox x:Name="startPositionInput" HorizontalAlignment="Left" Height="23" Margin="890,553,-188,0" Grid.Row="1" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="64" Grid.RowSpan="2"/>
+        <TextBox x:Name="endPositionInput" HorizontalAlignment="Left" Height="23" Margin="890,13,-188,0" Grid.Row="2" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="64"/>
+        <Button x:Name="kinectHeightSetButton" Content="Set" HorizontalAlignment="Left" Margin="968,523,-277,0" Grid.Row="1" VerticalAlignment="Top" Width="75" Click="kinectHeightSetButton_Click"/>
+        <Button x:Name="startPositionSetButton" Content="Set" HorizontalAlignment="Left" Margin="968,554,-277,0" Grid.Row="1" VerticalAlignment="Top" Width="75" Grid.RowSpan="2" Click="startPositionSetButton_Click"/>
+        <Button x:Name="endPositionSetButton" Content="Set" HorizontalAlignment="Left" Margin="968,13,-277,0" Grid.Row="2" VerticalAlignment="Top" Width="75" Click="endPositionSetButton_Click"/>
     </Grid>
 </Window>

@@ -123,6 +123,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
          private int FrameRate;
          private int kinectAngle;
 
+         private double kinectHeight;
+         private double startPosition;
+         private double endPosition;
+         private double userPosition;
+
 
         
 
@@ -135,6 +140,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             InitializeComponent();
             ipInputTextBox.Text = sourceEndPoint.Address.ToString();
             portInputBox.Text = sourceEndPoint.Port.ToString();
+            kinectHeight = 2.15;
+            startPosition = -0.2;
+            endPosition = 1.2;
+
+            userPosition = -100;
         }
 
         /// <summary>
@@ -291,6 +301,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             // show my ip address
             ipShowTextBlock.Text = LocalIPAddress();
+
+            kinectHeightInput.Text = kinectHeight.ToString();
+            startPositionInput.Text = startPosition.ToString();
+            endPositionInput.Text = endPosition.ToString();
             
             
         }
@@ -436,7 +450,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             //float FBMove = (hipCenter.Position.Z - (float)2.9) *(float) Math.Cos(23 *Math.PI / 180.0) *(float)(-1.0);
             //FBMoveTextBox.Text = FBMove.ToString();
-            float FBMove = (float)(3.0)-(float)Math.Sqrt(Math.Pow(skel.Position.X,2)+Math.Pow(skel.Position.Y,2)+Math.Pow(skel.Position.Z,2));
+            Vector3D skelVec = new Vector3D(skel.Position.X, skel.Position.Y, skel.Position.Z);
+            Vector3D transSkel = Vector3D.Multiply(skelVec, transformMatrix);
+            userPosition = 3.0 - skelVec.Z;
+
+            float FBMove = (float)userPosition;
+            //float FBMove = (float)(3.0)-(float)Math.Sqrt(Math.Pow(skel.Position.X,2)+Math.Pow(skel.Position.Y,2)+Math.Pow(skel.Position.Z,2));
             FBMoveTextBox.Text = FBMove.ToString();
 
             Vector3D hipCenterVec = new Vector3D(hipCenter.Position.X, hipCenter.Position.Y, hipCenter.Position.Z);
@@ -473,24 +492,31 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             if (OSCCheckBox.IsChecked == true)
             {
-                if (FBAngle == Double.NaN) { FBAngle = 15; }
-                if (LRAngle == Double.NaN) { LRAngle = 0; }
-                if (shoulderRotation == Double.NaN) { shoulderRotation = 0; }
-                if (bodyRotation == Double.NaN) { bodyRotation = 0; }
-
-                
-                msg = new OscMessage(sourceEndPoint, kinectMsg);
-                msg.Append((float)LRMove);
-                msg.Append((float)FBMove);
-                msg.Append((float)transHipCenter.Y);
-                msg.Append((float)FBAngle);
-                msg.Append((float)LRAngle);
-                msg.Append((float)shoulderRotation);
-                msg.Append((float)bodyRotation);
-                msg.Append((float)transkneeRight.Y);
-                msg.Send(sourceEndPoint);
+                if (userPosition > startPosition && userPosition < endPosition)
+                {
+                    if (FBAngle == Double.NaN) { FBAngle = 15; }
+                    if (LRAngle == Double.NaN) { LRAngle = 0; }
+                    if (shoulderRotation == Double.NaN) { shoulderRotation = 0; }
+                    if (bodyRotation == Double.NaN) { bodyRotation = 0; }
 
 
+                    msg = new OscMessage(sourceEndPoint, kinectMsg);
+                    msg.Append((float)LRMove);
+                    msg.Append((float)FBMove);
+                    msg.Append((float)transHipCenter.Y);
+                    msg.Append((float)FBAngle);
+                    msg.Append((float)LRAngle);
+                    msg.Append((float)shoulderRotation);
+                    msg.Append((float)bodyRotation);
+                    msg.Append((float)transkneeRight.Y);
+                    msg.Send(sourceEndPoint);
+                }
+
+                if (userPosition >= endPosition)
+                { 
+                    // turn off infrared emitter
+                    // let main controller know
+                }
             }
         }
 
@@ -819,6 +845,21 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
 
             return true;
+        }
+
+        private void kinectHeightSetButton_Click(object sender, RoutedEventArgs e)
+        {
+            kinectHeight = Convert.ToDouble(kinectHeightInput.Text);
+        }
+
+        private void startPositionSetButton_Click(object sender, RoutedEventArgs e)
+        {
+            startPosition = Convert.ToDouble(startPositionInput.Text);
+        }
+
+        private void endPositionSetButton_Click(object sender, RoutedEventArgs e)
+        {
+            endPosition = Convert.ToDouble(endPositionInput.Text);
         }
         
 
