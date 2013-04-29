@@ -132,6 +132,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private double endPosition;
         private double userPosition;
 
+        private double kinectOffset;
+        
+
         private int kinectID;
 
         private string kinectMsgAddr = "/kinect";
@@ -158,6 +161,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             endPosition = 1.2;
 
             userPosition = -100;
+
+            kinectOffset = 3.0;
+            
 
             kinectID = 1;
             kinectIDText.Text = "Front";
@@ -326,6 +332,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             kinectHeightInput.Text = kinectHeight.ToString();
             startPositionInput.Text = startPosition.ToString();
             endPositionInput.Text = endPosition.ToString();
+            kinectOffsetInput.Text = kinectOffset.ToString();
 
 
             //oscCmdReceiver = new OscServer(TransportType.Udp, IPAddress.Loopback, cmdServerPort);
@@ -464,6 +471,18 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
             UpdateFrameRate();
             frameRateText.Text = FrameRate.ToString();
+            if (InfraredEmitterCheckbox.IsChecked == true)
+            {
+                kinectRunStatus.Background = new SolidColorBrush(Colors.Black);
+                kinectRunStatus.Foreground = new SolidColorBrush(Colors.Blue);
+                kinectRunStatus.Content = "Not Running";
+            }
+            else 
+            {
+                kinectRunStatus.Background = new SolidColorBrush(Colors.Red);
+                kinectRunStatus.Foreground = new SolidColorBrush(Colors.Yellow);
+                kinectRunStatus.Content = "Running";
+            }
         }
        
 
@@ -487,7 +506,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             //FBMoveTextBox.Text = FBMove.ToString();
             Vector3D skelVec = new Vector3D(skel.Position.X, skel.Position.Y, skel.Position.Z);
             Vector3D transSkel = Vector3D.Multiply(skelVec, transformMatrix);
-            userPosition = 3.0 - skelVec.Z;
+            userPosition = kinectOffset - skelVec.Z;
 
             float FBMove = (float)userPosition;
             //float FBMove = (float)(3.0)-(float)Math.Sqrt(Math.Pow(skel.Position.X,2)+Math.Pow(skel.Position.Y,2)+Math.Pow(skel.Position.Z,2));
@@ -495,7 +514,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             Vector3D hipCenterVec = new Vector3D(hipCenter.Position.X, hipCenter.Position.Y, hipCenter.Position.Z);
             Vector3D transHipCenter = Vector3D.Multiply(hipCenterVec, transformMatrix);
-            transHipCenter.Y = 2.15 + transHipCenter.Y;
+            transHipCenter.Y = kinectHeight + transHipCenter.Y;
             UDMoveTextBox.Text = transHipCenter.Y.ToString();
             //float UDMove = hipCenter.Position.Y;
             //UDMoveTextBox.Text = UDMove.ToString();
@@ -508,7 +527,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             //float kneeHeight = (kneeLeft.Position.Y + kneeRight.Position.Y) / 2;
             //kneeHeight = kneeHeight - FBMove * (float)Math.Sin(23 * Math.PI / 180.0);
             //kneeHeightTextBox.Text = kneeHeight.ToString();
-            transkneeRight.Y = 2.15 + transkneeRight.Y;
+            transkneeRight.Y = kinectHeight + transkneeRight.Y;
             kneeHeightTextBox.Text = transkneeRight.Y.ToString();
             //kneeHeightTextBox.Text = kneeRight.Position.Y.ToString();
 
@@ -527,6 +546,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             if (OSCCheckBox.IsChecked == true)
             {
+                if (userPosition <= startPosition)
+                {
+                    cmdMsg = new OscMessage(cmdServerIP, cmdMsgAddr);
+                    cmdMsg.Append("IN");
+                    cmdMsg.Send(cmdServerIP);
+                }
                 if (userPosition > startPosition && userPosition < endPosition)
                 {
                     if (FBAngle == Double.NaN) { FBAngle = 15; }
@@ -549,7 +574,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 if (userPosition >= endPosition)
                 { 
-                    // turn off infrared emitter
+
                     // let main controller know
                     cmdMsg = new OscMessage(cmdServerIP, cmdMsgAddr);
                     cmdMsg.Append("OUT");
@@ -940,7 +965,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         }
 
-        private static void oscCmdReceiver_MessageReceived(object sender, OscMessageReceivedEventArgs e)
+        private void oscCmdReceiver_MessageReceived(object sender, OscMessageReceivedEventArgs e)
         {
             sMessagesReceivedCount++;
 
@@ -948,6 +973,64 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             Console.WriteLine(string.Format("\nMessage Received [{0}]: {1}", message.SourceEndPoint.Address, message.Address));
             Console.WriteLine(string.Format("Message contains {0} objects.", message.Data.Count));
+
+            if (kinectID == 1)
+            {
+                if (message.Address == "/kinect/1")
+                {
+                    if (message.Data[0].ToString() == "START")
+                    {
+                        this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(delegate
+                        {
+                            InfraredEmitterCheckbox.IsChecked = false;
+                            this.sensor.ForceInfraredEmitterOff = false;
+                        }));
+
+                    }
+                }
+
+                if (message.Address == "/kinect/1")
+                {
+                    if (message.Data[0].ToString() == "STOP")
+                    {
+                        this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(delegate
+                        {
+                            InfraredEmitterCheckbox.IsChecked = true;
+                            this.sensor.ForceInfraredEmitterOff = true;
+                        }));
+
+                    }
+                }
+            }
+
+            if (kinectID == 2)
+            {
+                if (message.Address == "/kinect/2")
+                {
+                    if (message.Data[0].ToString() == "START")
+                    {
+                        this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(delegate
+                        {
+                            InfraredEmitterCheckbox.IsChecked = false;
+                            this.sensor.ForceInfraredEmitterOff = false;
+                        }));
+
+                    }
+                }
+
+                if (message.Address == "/kinect/2")
+                {
+                    if (message.Data[0].ToString() == "STOP")
+                    {
+                        this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(delegate
+                        {
+                            InfraredEmitterCheckbox.IsChecked = true;
+                            this.sensor.ForceInfraredEmitterOff = true;
+                        }));
+
+                    }
+                }
+            }
 
             for (int i = 0; i < message.Data.Count; i++)
             {
@@ -975,6 +1058,27 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         private static int sBundlesReceivedCount;
         private static int sMessagesReceivedCount;
+
+        private void kinectOffsetButton_Click(object sender, RoutedEventArgs e)
+        {
+            kinectOffset = Convert.ToDouble(kinectOffsetInput.Text);
+            kinectOffsetInput.Text = kinectOffset.ToString();
+        }
+
+        private void InfraredEmitterCheckbox_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.sensor != null)
+            {
+                if (InfraredEmitterCheckbox.IsChecked == true)
+                {
+                    this.sensor.ForceInfraredEmitterOff = true;
+                }
+                else
+                {
+                    this.sensor.ForceInfraredEmitterOff = false;
+                }
+            }
+        }
        
         
 

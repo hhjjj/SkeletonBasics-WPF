@@ -137,12 +137,12 @@
         <Label Content="상하 이동" HorizontalAlignment="Left" Margin="33,64,-110,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1" Grid.Column="1"/>
         <Label Content="My IP Addr" HorizontalAlignment="Left" Margin="36,29,-113,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="2" Grid.Column="1" Grid.RowSpan="2"/>
         <TextBlock x:Name="ipShowTextBlock" HorizontalAlignment="Left" Margin="124,34,-286,0" Grid.Row="2" TextWrapping="Wrap" Text="my ip address" VerticalAlignment="Top" Width="163" Grid.Column="1" Grid.RowSpan="2"/>
-        <TextBlock x:Name="frameRateText" HorizontalAlignment="Left" Margin="134,327,-245,0" Grid.Row="1" TextWrapping="Wrap" Text="fps" VerticalAlignment="Top" Width="112" FontSize="36" Foreground="#FFEB1EFF" Grid.Column="1"/>
+        <TextBlock x:Name="frameRateText" HorizontalAlignment="Left" Margin="134,310,-245,0" Grid.Row="1" TextWrapping="Wrap" Text="fps" VerticalAlignment="Top" Width="112" FontSize="36" Foreground="#FFEB1EFF" Grid.Column="1"/>
         <Label Content="무릎 높이" HorizontalAlignment="Left" Margin="33,243,-110,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1" Grid.Column="1"/>
         <TextBox x:Name="kneeHeightTextBox" HorizontalAlignment="Left" Height="23" Margin="111,246,-230,0" TextWrapping="Wrap" Text="m" VerticalAlignment="Top" Width="120" Grid.Row="1" Grid.Column="1"/>
-        <Label Content="Frame Rate" HorizontalAlignment="Left" Margin="36,349,-113,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1" Grid.Column="1"/>
-        <Label Content="Kinect Angle" HorizontalAlignment="Left" Margin="36,375,-128,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="93" Grid.Row="1" Grid.Column="1"/>
-        <TextBlock x:Name="angleText" HorizontalAlignment="Left" Margin="134,380,-230,0" Grid.Row="1" TextWrapping="Wrap" Text="degree" VerticalAlignment="Top" Width="97" Grid.Column="1"/>
+        <Label Content="Frame Rate" HorizontalAlignment="Left" Margin="36,332,-113,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="78" Grid.Row="1" Grid.Column="1"/>
+        <Label Content="Kinect Angle" HorizontalAlignment="Left" Margin="36,358,-128,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="93" Grid.Row="1" Grid.Column="1"/>
+        <TextBlock x:Name="angleText" HorizontalAlignment="Left" Margin="134,363,-230,0" Grid.Row="1" TextWrapping="Wrap" Text="degree" VerticalAlignment="Top" Width="97" Grid.Column="1"/>
         <TextBlock x:Name="allTrackedText" HorizontalAlignment="Left" Margin="134,411,-245,0" Grid.Row="1" TextWrapping="Wrap" VerticalAlignment="Top" Width="112" Grid.Column="1"><Run Language="ko-kr" Text="Tracking"/></TextBlock>
         <Label Content="Joint Tracking" HorizontalAlignment="Left" Margin="36,406,-128,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="93" Grid.Row="1" Grid.Column="1"/>
         <Label Content="kinect Height" HorizontalAlignment="Left" Margin="36,459,-128,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="93" Grid.Row="1" Grid.Column="1"/>
@@ -170,5 +170,10 @@
         </Grid>
         <TextBlock HorizontalAlignment="Left" Margin="148,17,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="20"><Run Language="ko-kr" Text="Kinect"/></TextBlock>
         <TextBlock x:Name="kinectIDText" HorizontalAlignment="Left" Margin="208,17,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="20" Foreground="Red"><Run Language="ko-kr" Text="Front"/></TextBlock>
+        <Label Content="kinect Offset" HorizontalAlignment="Left" Margin="36,432,-128,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="93" Grid.Row="1" Grid.Column="1"/>
+        <TextBox x:Name="kinectOffsetInput" Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="134,434,-197,0" Grid.Row="1" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="64"/>
+        <Button x:Name="kinectOffsetButton" Content="Set" Grid.Column="1" HorizontalAlignment="Left" Margin="212,434,-286,0" Grid.Row="1" VerticalAlignment="Top" Width="75" Click="kinectOffsetButton_Click"/>
+        <CheckBox x:Name="InfraredEmitterCheckbox" Content="Infrared Emiiter Off" HorizontalAlignment="Left" Margin="275,15,0,0" Grid.Row="2" VerticalAlignment="Top" Width="213" Click="InfraredEmitterCheckbox_Click" />
+        <Label x:Name="kinectRunStatus" Content="Label" HorizontalAlignment="Left" Margin="294,13,0,0" VerticalAlignment="Top" Width="194" Background="White" FontSize="20"/>
     </Grid>
 </Window>
