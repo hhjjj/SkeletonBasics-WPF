@@ -132,6 +132,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private double endPosition;
         private double userPosition;
 
+        private double currentPosition;
+        private double pastPosition;
+
+        private const double moveStep = 0.005;
+        private int frameCount;
+
         private double kinectOffset;
         
 
@@ -139,12 +145,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         private string kinectMsgAddr = "/kinect";
         private string cmdMsgAddr = "/kinect/";
-        //private static readonly string AliveMethod = "/osctest/alive";
-        //private static readonly string TestMethod = "/osctest/test";
-
-      
-
-
+ 
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
@@ -159,8 +160,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             kinectHeight = 2.15;
             startPosition = -0.2;
             endPosition = 1.2;
-
+            frameCount = 0;
             userPosition = -100;
+
+            currentPosition = 0;
+            pastPosition = 0;
+
+            //moveStep = 0.005;
 
             kinectOffset = 3.0;
             
@@ -483,6 +489,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 kinectRunStatus.Foreground = new SolidColorBrush(Colors.Yellow);
                 kinectRunStatus.Content = "Running";
             }
+
+            frameCount++;
         }
        
 
@@ -509,6 +517,28 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             userPosition = kinectOffset - skelVec.Z;
 
             float FBMove = (float)userPosition;
+
+            currentPosition = userPosition;
+            if ((currentPosition - pastPosition) > moveStep)
+            {
+                FBMove = (float)1.0;
+            }
+            else if ((currentPosition - pastPosition) < moveStep )
+            {
+                FBMove = (float)(-1.0);
+            }
+            else
+            {
+                FBMove = (float)0;
+            }
+            //FBMove = (float)(currentPosition - pastPosition);
+            if (frameCount > 5)
+            {
+                frameCount = 0;
+                pastPosition = currentPosition;
+            }
+
+            //float FBMove = (float)userPosition;
             //float FBMove = (float)(3.0)-(float)Math.Sqrt(Math.Pow(skel.Position.X,2)+Math.Pow(skel.Position.Y,2)+Math.Pow(skel.Position.Z,2));
             FBMoveTextBox.Text = FBMove.ToString();
 
