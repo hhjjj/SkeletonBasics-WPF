@@ -523,11 +523,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 FBMove = (float)1.0;
             }
-            else if ((currentPosition - pastPosition) < moveStep )
+            else if ((currentPosition - pastPosition) < moveStep*(-1.0) )
             {
                 FBMove = (float)(-1.0);
             }
-            else
+            else if ((currentPosition - pastPosition) > moveStep * (-1.0) && (currentPosition - pastPosition) < moveStep)
             {
                 FBMove = (float)0;
             }
