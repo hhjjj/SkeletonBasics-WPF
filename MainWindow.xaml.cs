@@ -144,7 +144,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private int kinectID;
 
         private string kinectMsgAddr = "/kinect";
-        private string cmdMsgAddr = "/kinect/";
+        //private string kinectMsgAddr = "/kinect/";
  
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
@@ -174,7 +174,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             kinectID = 1;
             kinectIDText.Text = "Front";
             kinectIDInput.Text = "1";
-            cmdMsgAddr = "/kinect/" + kinectID.ToString();
+            kinectMsgAddr = "/kinect/" + kinectID.ToString();
         }
 
         /// <summary>
@@ -266,7 +266,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     smoothingParam.JitterRadius = 0.05f;
                     smoothingParam.MaxDeviationRadius = 0.04f;
                 };
-                
+                */
 
                 // Smoothed with some latency.
                 // Filters out medium jitters.
@@ -280,21 +280,21 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     smoothingParam.JitterRadius = 0.1f;
                     smoothingParam.MaxDeviationRadius = 0.1f;
                 };
-                */
+                
 
                 // Very smooth, but with a lot of latency.
                 // Filters out large jitters.
                 // Good for situations where smooth data is absolutely required
                 // and latency is not an issue.
                 
-                TransformSmoothParameters smoothingParam = new TransformSmoothParameters();
-                {
-                    smoothingParam.Smoothing = 0.7f;
-                    smoothingParam.Correction = 0.3f;
-                    smoothingParam.Prediction = 1.0f;
-                    smoothingParam.JitterRadius = 1.0f;
-                    smoothingParam.MaxDeviationRadius = 1.0f;
-                };
+                //TransformSmoothParameters smoothingParam = new TransformSmoothParameters();
+                //{
+                //    smoothingParam.Smoothing = 0.7f;
+                //    smoothingParam.Correction = 0.3f;
+                //    smoothingParam.Prediction = 1.0f;
+                //    smoothingParam.JitterRadius = 1.0f;
+                //    smoothingParam.MaxDeviationRadius = 1.0f;
+                //};
                 
                 // Turn on the skeleton stream to receive skeleton frames
                 //this.sensor.SkeletonStream.Enable();
@@ -346,7 +346,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             //oscCmdReceiver = new OscServer(IPAddress.Parse("224.25.26.27"), cmdServerPort);
             oscCmdReceiver.FilterRegisteredMethods = false;
             //oscCmdServer.RegisterMethod(oscCmd);
-            oscCmdReceiver.RegisterMethod(cmdMsgAddr);
+            oscCmdReceiver.RegisterMethod(kinectMsgAddr);
             oscCmdReceiver.BundleReceived += new EventHandler<OscBundleReceivedEventArgs>(oscCmdReceiver_BundleReceived);
             oscCmdReceiver.MessageReceived += new EventHandler<OscMessageReceivedEventArgs>(oscCmdReceiver_MessageReceived);
             oscCmdReceiver.ReceiveErrored += new EventHandler<ExceptionEventArgs>(oscCmdReceiver_ReceiveErrored);
@@ -516,29 +516,29 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             Vector3D transSkel = Vector3D.Multiply(skelVec, transformMatrix);
             userPosition = kinectOffset - skelVec.Z;
 
-            float FBMove = (float)userPosition;
-
-            currentPosition = userPosition;
-            if ((currentPosition - pastPosition) > moveStep)
-            {
-                FBMove = (float)1.0;
-            }
-            else if ((currentPosition - pastPosition) < moveStep*(-1.0) )
-            {
-                FBMove = (float)(-1.0);
-            }
-            else if ((currentPosition - pastPosition) > moveStep * (-1.0) && (currentPosition - pastPosition) < moveStep)
-            {
-                FBMove = (float)0;
-            }
-            //FBMove = (float)(currentPosition - pastPosition);
-            if (frameCount > 5)
-            {
-                frameCount = 0;
-                pastPosition = currentPosition;
-            }
-
             //float FBMove = (float)userPosition;
+
+            //currentPosition = userPosition;
+            //if ((currentPosition - pastPosition) > moveStep)
+            //{
+            //    FBMove = (float)1.0;
+            //}
+            //else if ((currentPosition - pastPosition) < moveStep*(-1.0) )
+            //{
+            //    FBMove = (float)(-1.0);
+            //}
+            //else if ((currentPosition - pastPosition) > moveStep * (-1.0) && (currentPosition - pastPosition) < moveStep)
+            //{
+            //    FBMove = (float)(0.0);
+            //}
+            ////FBMove = (float)(currentPosition - pastPosition);
+            //if (frameCount > 5)
+            //{
+            //    frameCount = 0;
+            //    pastPosition = currentPosition;
+            //}
+
+            float FBMove = (float)userPosition;
             //float FBMove = (float)(3.0)-(float)Math.Sqrt(Math.Pow(skel.Position.X,2)+Math.Pow(skel.Position.Y,2)+Math.Pow(skel.Position.Z,2));
             FBMoveTextBox.Text = FBMove.ToString();
 
@@ -578,7 +578,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 if (userPosition <= startPosition)
                 {
-                    cmdMsg = new OscMessage(cmdServerIP, cmdMsgAddr);
+                    cmdMsg = new OscMessage(cmdServerIP, kinectMsgAddr);
                     cmdMsg.Append("IN");
                     cmdMsg.Send(cmdServerIP);
                 }
@@ -606,7 +606,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 { 
 
                     // let main controller know
-                    cmdMsg = new OscMessage(cmdServerIP, cmdMsgAddr);
+                    cmdMsg = new OscMessage(cmdServerIP, kinectMsgAddr);
                     cmdMsg.Append("OUT");
                     cmdMsg.Send(cmdServerIP);
                 }
@@ -969,7 +969,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private void kinectIDButton_Click(object sender, RoutedEventArgs e)
         {
             kinectID = Convert.ToInt32(kinectIDInput.Text);
-            cmdMsgAddr = "/kinect/" + kinectID.ToString();
+            kinectMsgAddr = "/kinect/" + kinectID.ToString();
             if (kinectID == 1)
             {
                 kinectIDText.Text = "Front";
