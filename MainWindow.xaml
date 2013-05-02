@@ -156,9 +156,9 @@
         <Button x:Name="endPositionSetButton" Content="Set" HorizontalAlignment="Left" Margin="212,517,-286,0" Grid.Row="1" VerticalAlignment="Top" Width="75" Click="endPositionSetButton_Click" Grid.Column="1"/>
         <Grid HorizontalAlignment="Left" Height="150" Margin="1,421,0,0" Grid.Row="1" VerticalAlignment="Top" Width="556">
             <CheckBox x:Name="OSCCheckBox" Content="Send OSC Msgs" HorizontalAlignment="Left" Margin="283,109,0,0" VerticalAlignment="Top" Width="144" IsChecked="True"/>
-            <TextBox x:Name="ipInputTextBox" HorizontalAlignment="Left" Height="23" Margin="4,48,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="102"/>
+            <TextBox x:Name="kinectIpInput" HorizontalAlignment="Left" Height="23" Margin="4,48,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="102"/>
             <Button x:Name="ipUpdateButton" Content="Apply" HorizontalAlignment="Left" Margin="172,48,0,0" VerticalAlignment="Top" Width="75" Click="ipUpdateButton_Click"/>
-            <TextBox x:Name="portInputBox" HorizontalAlignment="Left" Height="23" Margin="111,48,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="56"/>
+            <TextBox x:Name="kinectPortInput" HorizontalAlignment="Left" Height="23" Margin="111,48,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="56"/>
             <Label Content="Set Kinect Server" HorizontalAlignment="Left" Margin="4,17,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="120"/>
             <Label Content="Set Command Server" HorizontalAlignment="Left" Margin="4,79,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.553,-0.115" Width="132"/>
             <TextBox x:Name="cmdIpInput" HorizontalAlignment="Left" Height="23" Margin="4,105,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="102"/>

@@ -1,0 +1,33 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Microsoft.Samples.Kinect.SkeletonBasics" GeneratedClassName="MySettings">
+  <Profiles />
+  <Settings>
+    <Setting Name="kinectServerIPSetting" Type="System.String" Scope="User">
+      <Value Profile="(Default)">192.168.0.118</Value>
+    </Setting>
+    <Setting Name="kinectServerPortSetting" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">5103</Value>
+    </Setting>
+    <Setting Name="cmdServerIPSetting" Type="System.String" Scope="User">
+      <Value Profile="(Default)">192.168.0.100</Value>
+    </Setting>
+    <Setting Name="cmdServerPortSetting" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">8000</Value>
+    </Setting>
+    <Setting Name="kinectHeightSetting" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">2.15</Value>
+    </Setting>
+    <Setting Name="startPositionSetting" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">-0.2</Value>
+    </Setting>
+    <Setting Name="endPositionSetting" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">1.2</Value>
+    </Setting>
+    <Setting Name="kinectOffsetSetting" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">3</Value>
+    </Setting>
+    <Setting Name="kinectIDSetting" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

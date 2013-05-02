@@ -152,29 +152,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public MainWindow()
         {
             InitializeComponent();
-            ipInputTextBox.Text = kinectServerIP.Address.ToString();
-            portInputBox.Text = kinectServerIP.Port.ToString();
-            cmdIpInput.Text = cmdServerIP.Address.ToString();
-            cmdPortInput.Text = cmdServerIP.Port.ToString();
 
-            kinectHeight = 2.15;
-            startPosition = -0.2;
-            endPosition = 1.2;
-            frameCount = 0;
-            userPosition = -100;
-
-            currentPosition = 0;
-            pastPosition = 0;
-
-            //moveStep = 0.005;
-
-            kinectOffset = 3.0;
-            
-
-            kinectID = 1;
-            kinectIDText.Text = "Front";
-            kinectIDInput.Text = "1";
-            kinectMsgAddr = "/kinect/" + kinectID.ToString();
+         
         }
 
         /// <summary>
@@ -229,6 +208,56 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <param name="e">event arguments</param>
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
+
+            kinectServerIP.Address = IPAddress.Parse(MySettings.Default.kinectServerIPSetting);
+            kinectServerIP.Port = MySettings.Default.kinectServerPortSetting;
+            cmdServerIP.Address = IPAddress.Parse(MySettings.Default.cmdServerIPSetting);
+            cmdServerIP.Port = MySettings.Default.cmdServerPortSetting;
+
+            kinectIpInput.Text = kinectServerIP.Address.ToString();
+            kinectPortInput.Text = kinectServerIP.Port.ToString();
+            cmdIpInput.Text = cmdServerIP.Address.ToString();
+            cmdPortInput.Text = cmdServerIP.Port.ToString();
+
+            kinectHeight = MySettings.Default.kinectHeightSetting;
+            startPosition = MySettings.Default.startPositionSetting;
+            endPosition = MySettings.Default.endPositionSetting;
+            kinectOffset = MySettings.Default.kinectOffsetSetting;
+
+            kinectHeightInput.Text = kinectHeight.ToString();
+            startPositionInput.Text = startPosition.ToString();
+            endPositionInput.Text = endPosition.ToString();
+            kinectOffsetInput.Text = kinectOffset.ToString();
+
+            // show my ip address
+            ipShowTextBlock.Text = LocalIPAddress();
+
+
+
+            frameCount = 0;
+            userPosition = -100;
+
+            currentPosition = 0;
+            pastPosition = 0;
+
+            //moveStep = 0.005;
+
+
+
+
+            kinectID = MySettings.Default.kinectIDSetting;
+            if (kinectID == 1)
+            {
+                kinectIDText.Text = "Front";
+            }
+            else if (kinectID == 2)
+            {
+                kinectIDText.Text = "Back";
+            }
+            kinectIDInput.Text = kinectID.ToString();
+
+            kinectMsgAddr = "/kinect/" + kinectID.ToString();
+
             // Create the drawing group we'll use for drawing
             this.drawingGroup = new DrawingGroup();
 
@@ -327,21 +356,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 this.statusBarText.Text = Properties.Resources.NoKinectReady;
             }
 
-            //transmitter = new UdpTransmitter();
             
-            //transmitter.Start(bundle);
-            //transmitter.Start(OSCMsg);
 
-            // show my ip address
-            ipShowTextBlock.Text = LocalIPAddress();
-
-            kinectHeightInput.Text = kinectHeight.ToString();
-            startPositionInput.Text = startPosition.ToString();
-            endPositionInput.Text = endPosition.ToString();
-            kinectOffsetInput.Text = kinectOffset.ToString();
-
-
-            //oscCmdReceiver = new OscServer(TransportType.Udp, IPAddress.Loopback, cmdServerPort);
+           //oscCmdReceiver = new OscServer(TransportType.Udp, IPAddress.Loopback, cmdServerPort);
             oscCmdReceiver = new OscServer(TransportType.Udp, IPAddress.Parse(LocalIPAddress()), cmdServerPort);
             //oscCmdReceiver = new OscServer(IPAddress.Parse("224.25.26.27"), cmdServerPort);
             oscCmdReceiver.FilterRegisteredMethods = false;
@@ -372,7 +389,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 this.sensor.Stop();
             }
             //transmitter.Stop();
-        
+            MySettings.Default.Save();
         }
 
         /// <summary>
@@ -884,10 +901,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             
             if (kinectServerIP != null)
             {
-                kinectServerIP.Address = IPAddress.Parse(ipInputTextBox.Text);
-                kinectServerIP.Port = Convert.ToInt32(portInputBox.Text);
-                ipInputTextBox.Text = kinectServerIP.Address.ToString();
-                portInputBox.Text = kinectServerIP.Port.ToString();
+                kinectServerIP.Address = IPAddress.Parse(kinectIpInput.Text);
+                kinectServerIP.Port = Convert.ToInt32(kinectPortInput.Text);
+                kinectIpInput.Text = kinectServerIP.Address.ToString();
+                kinectPortInput.Text = kinectServerIP.Port.ToString();
             }
         }
 
@@ -954,21 +971,30 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private void kinectHeightSetButton_Click(object sender, RoutedEventArgs e)
         {
             kinectHeight = Convert.ToDouble(kinectHeightInput.Text);
+            kinectHeightInput.Text = kinectHeight.ToString();
+            MySettings.Default.kinectHeightSetting = kinectHeight;
         }
 
         private void startPositionSetButton_Click(object sender, RoutedEventArgs e)
         {
             startPosition = Convert.ToDouble(startPositionInput.Text);
+            startPositionInput.Text = startPosition.ToString();
+            MySettings.Default.startPositionSetting = startPosition;
         }
 
         private void endPositionSetButton_Click(object sender, RoutedEventArgs e)
         {
             endPosition = Convert.ToDouble(endPositionInput.Text);
+            endPositionInput.Text = endPosition.ToString();
+            MySettings.Default.endPositionSetting = endPosition;
         }
 
         private void kinectIDButton_Click(object sender, RoutedEventArgs e)
         {
             kinectID = Convert.ToInt32(kinectIDInput.Text);
+            kinectIDInput.Text = kinectID.ToString();
+            MySettings.Default.kinectIDSetting = kinectID;
+
             kinectMsgAddr = "/kinect/" + kinectID.ToString();
             if (kinectID == 1)
             {
@@ -1093,6 +1119,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         {
             kinectOffset = Convert.ToDouble(kinectOffsetInput.Text);
             kinectOffsetInput.Text = kinectOffset.ToString();
+            MySettings.Default.kinectOffsetSetting = kinectOffset;
         }
 
         private void InfraredEmitterCheckbox_Click(object sender, RoutedEventArgs e)
