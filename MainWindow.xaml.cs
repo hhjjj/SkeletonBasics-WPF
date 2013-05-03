@@ -434,11 +434,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         }
                     }
 
+                    
                 }
-                if (closestID > 0)
+                if (closestID > 0  )
                 {
                     this.sensor.SkeletonStream.ChooseSkeletons(closestID);
                 }
+               
                           
             }
 
@@ -473,7 +475,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
 
                             // Calculate angles and send OSC msg
-                            CalculateAndSendOSC(skel);
+                            this.Dispatcher.Invoke(DispatcherPriority.Background, new Action(delegate
+                            {
+                                CalculateAndSendOSC(skel);
+                            }));
+                            
 
                         }
                         //else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
