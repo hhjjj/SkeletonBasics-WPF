@@ -446,6 +446,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             using (DrawingContext dc = this.drawingGroup.Open())
             {
+                
                 // Draw a transparent background to set the render size
                 dc.DrawRectangle(Brushes.Black, null, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
 
@@ -475,10 +476,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
 
                             // Calculate angles and send OSC msg
-                            this.Dispatcher.Invoke(DispatcherPriority.Background, new Action(delegate
-                            {
+                            //this.Dispatcher.Invoke(DispatcherPriority.Background, new Action(delegate
+                            //{
                                 CalculateAndSendOSC(skel);
-                            }));
+                            //}));
                             
 
                         }
@@ -911,6 +912,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 kinectServerIP.Port = Convert.ToInt32(kinectPortInput.Text);
                 kinectIpInput.Text = kinectServerIP.Address.ToString();
                 kinectPortInput.Text = kinectServerIP.Port.ToString();
+                MySettings.Default.kinectServerIPSetting = kinectIpInput.Text;
+                MySettings.Default.kinectServerPortSetting = kinectServerIP.Port;
             }
         }
 
@@ -922,6 +925,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 cmdServerIP.Port = Convert.ToInt32(cmdPortInput.Text);
                 cmdIpInput.Text = cmdServerIP.Address.ToString();
                 cmdPortInput.Text = cmdServerIP.Port.ToString();
+                MySettings.Default.cmdServerIPSetting = cmdIpInput.Text;
+                MySettings.Default.cmdServerPortSetting = cmdServerIP.Port;
             }
         }
 
