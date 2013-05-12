@@ -28,7 +28,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     using System.Collections.Generic;
     using System.Windows.Threading;
     using ExceptionEventArgs = Bespoke.Common.ExceptionEventArgs;
-
+    using System.Diagnostics;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -103,19 +103,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         Matrix3D transformMatrix;
 
         // OSC Related
-
         public static readonly int kinectServerPort = 5103;
         public static readonly int cmdServerPort = 8000;
         //OscBundle bundle = CreateTestBundle();
         //OscMessage OSCMsg = CreateTestMsg();
         //ITransmitter transmitter;
 
-         
-         
-
         private static IPEndPoint kinectServerIP = new IPEndPoint(IPAddress.Loopback, kinectServerPort);
         private static IPEndPoint cmdServerIP = new IPEndPoint(IPAddress.Loopback, cmdServerPort);
-
 
         OscServer oscCmdReceiver;
          
@@ -140,7 +135,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         private double kinectOffset;
         
-
         private int kinectID;
 
         private string kinectMsgAddr = "/kinect";
@@ -152,8 +146,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         public MainWindow()
         {
             InitializeComponent();
-
-         
         }
 
         /// <summary>
@@ -196,11 +188,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
         }
 
-
-        
-
-
-
         /// <summary>
         /// Execute startup tasks
         /// </summary>
@@ -208,7 +195,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <param name="e">event arguments</param>
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
-
             kinectServerIP.Address = IPAddress.Parse(MySettings.Default.kinectServerIPSetting);
             kinectServerIP.Port = MySettings.Default.kinectServerPortSetting;
             cmdServerIP.Address = IPAddress.Parse(MySettings.Default.cmdServerIPSetting);
@@ -241,9 +227,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             pastPosition = 0;
 
             //moveStep = 0.005;
-
-
-
 
             kinectID = MySettings.Default.kinectIDSetting;
             if (kinectID == 1)
@@ -332,9 +315,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 // Add an event handler to be called whenever there is new color frame data
                 this.sensor.SkeletonFrameReady += this.SensorSkeletonFrameReady;
 
-               
-               
-
                 // Start the sensor!
                 try
                 {
@@ -348,15 +328,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 {
                     this.sensor = null;
                 }
-                
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex.ToString());
+                }
             }
 
             if (null == this.sensor)
             {
                 this.statusBarText.Text = Properties.Resources.NoKinectReady;
             }
-
-            
 
            //oscCmdReceiver = new OscServer(TransportType.Udp, IPAddress.Loopback, cmdServerPort);
             oscCmdReceiver = new OscServer(TransportType.Udp, IPAddress.Parse(LocalIPAddress()), cmdServerPort);
@@ -369,13 +350,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             oscCmdReceiver.ReceiveErrored += new EventHandler<ExceptionEventArgs>(oscCmdReceiver_ReceiveErrored);
             oscCmdReceiver.ConsumeParsingExceptions = false;
             oscCmdReceiver.Start();
-            
-            
         }
-
-        
-
-        
 
         /// <summary>
         /// Execute shutdown tasks
@@ -400,8 +375,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private void SensorSkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
         {
             Skeleton[] skeletons = new Skeleton[0];
-            
-
             using (SkeletonFrame skeletonFrame = e.OpenSkeletonFrame())
             {
                 if (skeletonFrame != null)
@@ -432,73 +405,67 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                             closestDistance = skel.Position.Z;
                             closestID = skel.TrackingId;
                         }
-                    }
-
-                    
+                    }   
                 }
                 if (closestID > 0  )
                 {
                     this.sensor.SkeletonStream.ChooseSkeletons(closestID);
-                }
-               
-                          
+                }              
             }
 
-            using (DrawingContext dc = this.drawingGroup.Open())
-            {
-                
-                // Draw a transparent background to set the render size
-                dc.DrawRectangle(Brushes.Black, null, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
-
-                if (skeletons.Length != 0)
+            try
+            {   
+                using (DrawingContext dc = this.drawingGroup.Open())
                 {
+                    // Draw a transparent background to set the render size
+                    dc.DrawRectangle(Brushes.Black, null, new Rect(0.0, 0.0, RenderWidth, RenderHeight));
 
-
-                    foreach (Skeleton skel in skeletons)
+                    if (skeletons.Length != 0)
                     {
-                        RenderClippedEdges(skel, dc);
-
-                        if (skel.TrackingState == SkeletonTrackingState.Tracked)
+                        foreach (Skeleton skel in skeletons)
                         {
+                            RenderClippedEdges(skel, dc);
 
-                            
-                            if (isAllJointsTracked(skel))
+                            if (skel.TrackingState == SkeletonTrackingState.Tracked)
                             {
-                                allTrackedText.Text = "All Tracked";
+                                if (isAllJointsTracked(skel))
+                                {
+                                    allTrackedText.Text = "All Tracked";
+                                }
+                                else
+                                {
+                                    allTrackedText.Text = "Not All";
+                                }
+                                this.DrawBonesAndJoints(skel, dc);
+
+                                //Calculate angles and send OSC msg
+                                this.Dispatcher.BeginInvoke(new Action(() =>
+                                {
+                                    CalculateAndSendOSC(skel);
+                                }), DispatcherPriority.Normal);
                             }
-                            else
-                            {
-                                allTrackedText.Text = "Not All";
-                            }
-
-                            this.DrawBonesAndJoints(skel, dc);
-
-
-
-                            // Calculate angles and send OSC msg
-                            //this.Dispatcher.Invoke(DispatcherPriority.Background, new Action(delegate
+                            //else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
                             //{
-                                CalculateAndSendOSC(skel);
-                            //}));
-                            
-
+                            //  dc.DrawEllipse(
+                            //    this.centerPointBrush,
+                            //    null,
+                            //    this.SkeletonPointToScreen(skel.Position),
+                            //    BodyCenterThickness,
+                            //    BodyCenterThickness
+                            //  );
+                            //}
                         }
-                        //else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
-                        //{
-                        //    dc.DrawEllipse(
-                        //    this.centerPointBrush,
-                        //    null,
-                        //    this.SkeletonPointToScreen(skel.Position),
-                        //    BodyCenterThickness,
-                        //    BodyCenterThickness);
-                        //}
                     }
-                    
-                }
 
-                // prevent drawing outside of our render area
-                this.drawingGroup.ClipGeometry = new RectangleGeometry(new Rect(0.0, 0.0, RenderWidth, RenderHeight));
+                    // prevent drawing outside of our render area
+                    this.drawingGroup.ClipGeometry = new RectangleGeometry(new Rect(0.0, 0.0, RenderWidth, RenderHeight));
+                }
             }
+            catch(Exception ex)
+            {
+                Trace.WriteLine("FETM: "+ ex.ToString());
+            }
+
             UpdateFrameRate();
             frameRateText.Text = FrameRate.ToString();
             if (InfraredEmitterCheckbox.IsChecked == true)
@@ -517,123 +484,125 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             frameCount++;
         }
        
-
         void CalculateAndSendOSC(Skeleton skel)
         {
-            Joint hipCenter = skel.Joints[JointType.HipCenter];
-            Joint kneeLeft = skel.Joints[JointType.KneeLeft];
-            Joint kneeRight = skel.Joints[JointType.KneeRight];
-
-            transformMatrix = new Matrix3D(1, 0, 0, 0, 0, Math.Cos(DegreeToRadian(kinectAngle)), -1 * Math.Sin(DegreeToRadian(kinectAngle)), 0, 0, Math.Sin(DegreeToRadian(kinectAngle)), Math.Cos(DegreeToRadian(kinectAngle)), 0, 0, 0, 0, 1);
-
-
-            //if (hipCenter.TrackingState == JointTrackingState.NotTracked)
-            //{ 
-                
-            //}
-            float LRMove = hipCenter.Position.X *-1;
-            LRMoveTextBox.Text = LRMove.ToString();
-
-            //float FBMove = (hipCenter.Position.Z - (float)2.9) *(float) Math.Cos(23 *Math.PI / 180.0) *(float)(-1.0);
-            //FBMoveTextBox.Text = FBMove.ToString();
-            Vector3D skelVec = new Vector3D(skel.Position.X, skel.Position.Y, skel.Position.Z);
-            Vector3D transSkel = Vector3D.Multiply(skelVec, transformMatrix);
-            userPosition = kinectOffset - skelVec.Z;
-
-            //float FBMove = (float)userPosition;
-
-            //currentPosition = userPosition;
-            //if ((currentPosition - pastPosition) > moveStep)
-            //{
-            //    FBMove = (float)1.0;
-            //}
-            //else if ((currentPosition - pastPosition) < moveStep*(-1.0) )
-            //{
-            //    FBMove = (float)(-1.0);
-            //}
-            //else if ((currentPosition - pastPosition) > moveStep * (-1.0) && (currentPosition - pastPosition) < moveStep)
-            //{
-            //    FBMove = (float)(0.0);
-            //}
-            ////FBMove = (float)(currentPosition - pastPosition);
-            //if (frameCount > 5)
-            //{
-            //    frameCount = 0;
-            //    pastPosition = currentPosition;
-            //}
-
-            float FBMove = (float)userPosition;
-            //float FBMove = (float)(3.0)-(float)Math.Sqrt(Math.Pow(skel.Position.X,2)+Math.Pow(skel.Position.Y,2)+Math.Pow(skel.Position.Z,2));
-            FBMoveTextBox.Text = FBMove.ToString();
-
-            Vector3D hipCenterVec = new Vector3D(hipCenter.Position.X, hipCenter.Position.Y, hipCenter.Position.Z);
-            Vector3D transHipCenter = Vector3D.Multiply(hipCenterVec, transformMatrix);
-            transHipCenter.Y = kinectHeight + transHipCenter.Y;
-            UDMoveTextBox.Text = transHipCenter.Y.ToString();
-            //float UDMove = hipCenter.Position.Y;
-            //UDMoveTextBox.Text = UDMove.ToString();
-            
-
-            //float kneeHeight = (float)(1.0)+(kneeLeft.Position.Y + kneeRight.Position.Y) / 2;
-            Vector3D kneeRightVec = new Vector3D(kneeRight.Position.X, kneeRight.Position.Y, kneeRight.Position.Z);
-            Vector3D transkneeRight = Vector3D.Multiply(kneeRightVec, transformMatrix);
-
-            //float kneeHeight = (kneeLeft.Position.Y + kneeRight.Position.Y) / 2;
-            //kneeHeight = kneeHeight - FBMove * (float)Math.Sin(23 * Math.PI / 180.0);
-            //kneeHeightTextBox.Text = kneeHeight.ToString();
-            transkneeRight.Y = kinectHeight + transkneeRight.Y;
-            kneeHeightTextBox.Text = transkneeRight.Y.ToString();
-            //kneeHeightTextBox.Text = kneeRight.Position.Y.ToString();
-
-            double FBAngle = GetFBAngle(skel);
-            backBendingTextBox.Text = FBAngle.ToString();
-
-            double LRAngle = GetLRAngle(skel);
-            rightBendingTextBox.Text = LRAngle.ToString();
-                            
-            double shoulderRotation = GetShoulderRotation(skel);
-            upperTwistAngleTextBox.Text = shoulderRotation.ToString();
-
-            double bodyRotation = GetBodyRotation(skel);
-            bodyTwistAngleTextBox.Text = bodyRotation.ToString();
-
-
-            if (OSCCheckBox.IsChecked == true)
+            try
             {
-                if (userPosition <= startPosition)
+                Joint hipCenter = skel.Joints[JointType.HipCenter];
+                Joint kneeLeft = skel.Joints[JointType.KneeLeft];
+                Joint kneeRight = skel.Joints[JointType.KneeRight];
+
+                transformMatrix = new Matrix3D(1, 0, 0, 0, 0, Math.Cos(DegreeToRadian(kinectAngle)), -1 * Math.Sin(DegreeToRadian(kinectAngle)), 0, 0, Math.Sin(DegreeToRadian(kinectAngle)), Math.Cos(DegreeToRadian(kinectAngle)), 0, 0, 0, 0, 1);
+
+                //if (hipCenter.TrackingState == JointTrackingState.NotTracked)
+                //{ 
+
+                //}
+                float LRMove = hipCenter.Position.X * -1;
+                LRMoveTextBox.Text = LRMove.ToString();
+
+                //float FBMove = (hipCenter.Position.Z - (float)2.9) *(float) Math.Cos(23 *Math.PI / 180.0) *(float)(-1.0);
+                //FBMoveTextBox.Text = FBMove.ToString();
+                Vector3D skelVec = new Vector3D(skel.Position.X, skel.Position.Y, skel.Position.Z);
+                Vector3D transSkel = Vector3D.Multiply(skelVec, transformMatrix);
+                userPosition = kinectOffset - skelVec.Z;
+
+                //float FBMove = (float)userPosition;
+
+                //currentPosition = userPosition;
+                //if ((currentPosition - pastPosition) > moveStep)
+                //{
+                //    FBMove = (float)1.0;
+                //}
+                //else if ((currentPosition - pastPosition) < moveStep*(-1.0) )
+                //{
+                //    FBMove = (float)(-1.0);
+                //}
+                //else if ((currentPosition - pastPosition) > moveStep * (-1.0) && (currentPosition - pastPosition) < moveStep)
+                //{
+                //    FBMove = (float)(0.0);
+                //}
+                ////FBMove = (float)(currentPosition - pastPosition);
+                //if (frameCount > 5)
+                //{
+                //    frameCount = 0;
+                //    pastPosition = currentPosition;
+                //}
+
+                float FBMove = (float)userPosition;
+                //float FBMove = (float)(3.0)-(float)Math.Sqrt(Math.Pow(skel.Position.X,2)+Math.Pow(skel.Position.Y,2)+Math.Pow(skel.Position.Z,2));
+                FBMoveTextBox.Text = FBMove.ToString();
+
+                Vector3D hipCenterVec = new Vector3D(hipCenter.Position.X, hipCenter.Position.Y, hipCenter.Position.Z);
+                Vector3D transHipCenter = Vector3D.Multiply(hipCenterVec, transformMatrix);
+                transHipCenter.Y = kinectHeight + transHipCenter.Y;
+                UDMoveTextBox.Text = transHipCenter.Y.ToString();
+                //float UDMove = hipCenter.Position.Y;
+                //UDMoveTextBox.Text = UDMove.ToString();
+
+                //float kneeHeight = (float)(1.0)+(kneeLeft.Position.Y + kneeRight.Position.Y) / 2;
+                Vector3D kneeRightVec = new Vector3D(kneeRight.Position.X, kneeRight.Position.Y, kneeRight.Position.Z);
+                Vector3D transkneeRight = Vector3D.Multiply(kneeRightVec, transformMatrix);
+
+                //float kneeHeight = (kneeLeft.Position.Y + kneeRight.Position.Y) / 2;
+                //kneeHeight = kneeHeight - FBMove * (float)Math.Sin(23 * Math.PI / 180.0);
+                //kneeHeightTextBox.Text = kneeHeight.ToString();
+                transkneeRight.Y = kinectHeight + transkneeRight.Y;
+                kneeHeightTextBox.Text = transkneeRight.Y.ToString();
+                //kneeHeightTextBox.Text = kneeRight.Position.Y.ToString();
+
+                double FBAngle = GetFBAngle(skel);
+                backBendingTextBox.Text = FBAngle.ToString();
+
+                double LRAngle = GetLRAngle(skel);
+                rightBendingTextBox.Text = LRAngle.ToString();
+
+                double shoulderRotation = GetShoulderRotation(skel);
+                upperTwistAngleTextBox.Text = shoulderRotation.ToString();
+
+                double bodyRotation = GetBodyRotation(skel);
+                bodyTwistAngleTextBox.Text = bodyRotation.ToString();
+
+                if (OSCCheckBox.IsChecked == true)
                 {
-                    cmdMsg = new OscMessage(cmdServerIP, kinectMsgAddr);
-                    cmdMsg.Append("in");
-                    cmdMsg.Send(cmdServerIP);
+                    if (userPosition <= startPosition)
+                    {
+                        cmdMsg = new OscMessage(cmdServerIP, kinectMsgAddr);
+                        cmdMsg.Append("in");
+                        cmdMsg.Send(cmdServerIP);
+                    }
+                    if (userPosition > startPosition && userPosition < endPosition)
+                    {
+                        if (FBAngle == Double.NaN) { FBAngle = 15; }
+                        if (LRAngle == Double.NaN) { LRAngle = 0; }
+                        if (shoulderRotation == Double.NaN) { shoulderRotation = 0; }
+                        if (bodyRotation == Double.NaN) { bodyRotation = 0; }
+
+
+                        kinectMsg = new OscMessage(kinectServerIP, kinectMsgAddr);
+                        kinectMsg.Append((float)LRMove);
+                        kinectMsg.Append((float)FBMove);
+                        kinectMsg.Append((float)transHipCenter.Y);
+                        kinectMsg.Append((float)FBAngle);
+                        kinectMsg.Append((float)LRAngle);
+                        kinectMsg.Append((float)shoulderRotation);
+                        kinectMsg.Append((float)bodyRotation);
+                        kinectMsg.Append((float)transkneeRight.Y);
+                        kinectMsg.Send(kinectServerIP);
+                    }
+
+                    if (userPosition >= endPosition)
+                    {
+                        // let main controller know
+                        cmdMsg = new OscMessage(cmdServerIP, kinectMsgAddr);
+                        cmdMsg.Append("out");
+                        cmdMsg.Send(cmdServerIP);
+                    }
                 }
-                if (userPosition > startPosition && userPosition < endPosition)
-                {
-                    if (FBAngle == Double.NaN) { FBAngle = 15; }
-                    if (LRAngle == Double.NaN) { LRAngle = 0; }
-                    if (shoulderRotation == Double.NaN) { shoulderRotation = 0; }
-                    if (bodyRotation == Double.NaN) { bodyRotation = 0; }
-
-
-                    kinectMsg = new OscMessage(kinectServerIP, kinectMsgAddr);
-                    kinectMsg.Append((float)LRMove);
-                    kinectMsg.Append((float)FBMove);
-                    kinectMsg.Append((float)transHipCenter.Y);
-                    kinectMsg.Append((float)FBAngle);
-                    kinectMsg.Append((float)LRAngle);
-                    kinectMsg.Append((float)shoulderRotation);
-                    kinectMsg.Append((float)bodyRotation);
-                    kinectMsg.Append((float)transkneeRight.Y);
-                    kinectMsg.Send(kinectServerIP);
-                }
-
-                if (userPosition >= endPosition)
-                { 
-
-                    // let main controller know
-                    cmdMsg = new OscMessage(cmdServerIP, kinectMsgAddr);
-                    cmdMsg.Append("out");
-                    cmdMsg.Send(cmdServerIP);
-                }
+            }
+            catch(Exception ex)            
+            {
+                Trace.WriteLine(ex.ToString());
             }
         }
 
@@ -930,9 +899,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
         }
 
-
         protected int TotalFrames { get; set; }
-
         protected int LastFrames { get; set; }
 
         protected void ResetFrameRateCounters()
@@ -1130,7 +1097,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             Console.WriteLine("Error during reception of packet: {0}", e.Exception.Message);
         }
 
-
         private static int sBundlesReceivedCount;
         private static int sMessagesReceivedCount;
 
@@ -1155,10 +1121,5 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
             }
         }
-       
-        
-
-
-
     }
 }
