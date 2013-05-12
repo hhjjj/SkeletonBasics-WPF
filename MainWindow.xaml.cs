@@ -603,7 +603,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 if (userPosition <= startPosition)
                 {
                     cmdMsg = new OscMessage(cmdServerIP, kinectMsgAddr);
-                    cmdMsg.Append("IN");
+                    cmdMsg.Append("in");
                     cmdMsg.Send(cmdServerIP);
                 }
                 if (userPosition > startPosition && userPosition < endPosition)
@@ -631,7 +631,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                     // let main controller know
                     cmdMsg = new OscMessage(cmdServerIP, kinectMsgAddr);
-                    cmdMsg.Append("OUT");
+                    cmdMsg.Append("out");
                     cmdMsg.Send(cmdServerIP);
                 }
             }
@@ -1045,7 +1045,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 if (message.Address == "/kinect/1")
                 {
-                    if (message.Data[0].ToString() == "START")
+                    if (message.Data[0].ToString() == "on")
                     {
                         this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(delegate
                         {
@@ -1054,19 +1054,23 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         }));
 
                     }
-                }
-
-                if (message.Address == "/kinect/1")
-                {
-                    if (message.Data[0].ToString() == "STOP")
-                    {
-                        this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(delegate
+                    else
+                        if (message.Data[0].ToString() == "off")
                         {
-                            InfraredEmitterCheckbox.IsChecked = true;
-                            this.sensor.ForceInfraredEmitterOff = true;
-                        }));
+                            this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(delegate
+                            {
+                                InfraredEmitterCheckbox.IsChecked = true;
+                                this.sensor.ForceInfraredEmitterOff = true;
+                            }));
 
-                    }
+                        }
+                        else
+                            if (message.Data[0].ToString() == "test")
+                            {
+                                OscMessage msg = new OscMessage(cmdServerIP, "/kinect/1");
+                                msg.Append("ok");
+                                msg.Send(cmdServerIP);
+                            }
                 }
             }
 
@@ -1074,7 +1078,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 if (message.Address == "/kinect/2")
                 {
-                    if (message.Data[0].ToString() == "START")
+                    if (message.Data[0].ToString() == "on")
                     {
                         this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(delegate
                         {
@@ -1083,11 +1087,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         }));
 
                     }
-                }
-
-                if (message.Address == "/kinect/2")
-                {
-                    if (message.Data[0].ToString() == "STOP")
+                    else
+                    if (message.Data[0].ToString() == "off")
                     {
                         this.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(delegate
                         {
@@ -1096,6 +1097,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         }));
 
                     }
+                    else if (message.Data[0].ToString() == "test")
+                    {
+                        OscMessage msg = new OscMessage(cmdServerIP, "/kinect/2");
+                        msg.Append("ok");
+                        msg.Send(cmdServerIP);
+                    }
+                        
                 }
             }
 
