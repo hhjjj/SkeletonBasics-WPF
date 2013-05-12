@@ -138,6 +138,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private int kinectID;
 
         private string kinectMsgAddr = "/kinect";
+        DispatcherTimer dispatcherTimer;
+
+        private bool inFlag = false;
+        private bool outFlag = false;
+
         //private string kinectMsgAddr = "/kinect/";
  
         /// <summary>
@@ -195,6 +200,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <param name="e">event arguments</param>
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
+            inFlag = false;
+            outFlag = false;
+            dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
+            dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
+            dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
+            dispatcherTimer.Start();
             kinectServerIP.Address = IPAddress.Parse(MySettings.Default.kinectServerIPSetting);
             kinectServerIP.Port = MySettings.Default.kinectServerPortSetting;
             cmdServerIP.Address = IPAddress.Parse(MySettings.Default.cmdServerIPSetting);
@@ -441,8 +452,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 //Calculate angles and send OSC msg
                                 this.Dispatcher.BeginInvoke(new Action(() =>
                                 {
+                                    // if this slows down, do below only every other frames
                                     CalculateAndSendOSC(skel);
-                                }), DispatcherPriority.Normal);
+                                }), DispatcherPriority.Background);
                             }
                             //else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
                             //{
@@ -567,12 +579,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 {
                     if (userPosition <= startPosition)
                     {
-                        cmdMsg = new OscMessage(cmdServerIP, kinectMsgAddr);
-                        cmdMsg.Append("in");
-                        cmdMsg.Send(cmdServerIP);
+                        outFlag = true;
+                       
                     }
                     if (userPosition > startPosition && userPosition < endPosition)
                     {
+                        inFlag = true;
                         if (FBAngle == Double.NaN) { FBAngle = 15; }
                         if (LRAngle == Double.NaN) { LRAngle = 0; }
                         if (shoulderRotation == Double.NaN) { shoulderRotation = 0; }
@@ -594,9 +606,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     if (userPosition >= endPosition)
                     {
                         // let main controller know
-                        cmdMsg = new OscMessage(cmdServerIP, kinectMsgAddr);
-                        cmdMsg.Append("out");
-                        cmdMsg.Send(cmdServerIP);
+                        outFlag = true;
+                        
                     }
                 }
             }
@@ -1120,6 +1131,29 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     this.sensor.ForceInfraredEmitterOff = false;
                 }
             }
+        }
+
+        private void dispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            if (inFlag)
+            {
+                inFlag = false;
+                OscMessage msg = new OscMessage(cmdServerIP, kinectMsgAddr);
+                msg.Append("in");
+                msg.Send(cmdServerIP);
+            
+            }
+
+
+            if (outFlag)
+            {
+                outFlag = false;
+                OscMessage msg = new OscMessage(cmdServerIP, kinectMsgAddr);
+                msg.Append("out");
+                msg.Send(cmdServerIP);            
+            }
+            
+
         }
     }
 }
