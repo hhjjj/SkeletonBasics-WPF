@@ -442,6 +442,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                                 if (isAllJointsTracked(skel))
                                 {
                                     allTrackedText.Text = "All Tracked";
+                                    OscMessage msg = new OscMessage(cmdServerIP, kinectMsgAddr);
+                                    msg.Append("tracked");
+                                    msg.Send(cmdServerIP);
                                 }
                                 else
                                 {
@@ -504,12 +507,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 Joint kneeLeft = skel.Joints[JointType.KneeLeft];
                 Joint kneeRight = skel.Joints[JointType.KneeRight];
 
+                // To compensate sensor tilt ( y axis rotation)
                 transformMatrix = new Matrix3D(1, 0, 0, 0, 0, Math.Cos(DegreeToRadian(kinectAngle)), -1 * Math.Sin(DegreeToRadian(kinectAngle)), 0, 0, Math.Sin(DegreeToRadian(kinectAngle)), Math.Cos(DegreeToRadian(kinectAngle)), 0, 0, 0, 0, 1);
 
-                //if (hipCenter.TrackingState == JointTrackingState.NotTracked)
-                //{ 
-
-                //}
+               
                 float LRMove = hipCenter.Position.X * -1;
                 LRMoveTextBox.Text = LRMove.ToString();
 
@@ -519,27 +520,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 Vector3D transSkel = Vector3D.Multiply(skelVec, transformMatrix);
                 userPosition = kinectOffset - skelVec.Z;
 
-                //float FBMove = (float)userPosition;
-
-                //currentPosition = userPosition;
-                //if ((currentPosition - pastPosition) > moveStep)
-                //{
-                //    FBMove = (float)1.0;
-                //}
-                //else if ((currentPosition - pastPosition) < moveStep*(-1.0) )
-                //{
-                //    FBMove = (float)(-1.0);
-                //}
-                //else if ((currentPosition - pastPosition) > moveStep * (-1.0) && (currentPosition - pastPosition) < moveStep)
-                //{
-                //    FBMove = (float)(0.0);
-                //}
-                ////FBMove = (float)(currentPosition - pastPosition);
-                //if (frameCount > 5)
-                //{
-                //    frameCount = 0;
-                //    pastPosition = currentPosition;
-                //}
+              
 
                 float FBMove = (float)userPosition;
                 //float FBMove = (float)(3.0)-(float)Math.Sqrt(Math.Pow(skel.Position.X,2)+Math.Pow(skel.Position.Y,2)+Math.Pow(skel.Position.Z,2));
